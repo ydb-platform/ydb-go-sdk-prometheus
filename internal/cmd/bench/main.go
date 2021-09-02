@@ -5,10 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/YandexDatabase/ydb-go-monitoring-go-metrics"
-	"github.com/yandex-cloud/ydb-go-sdk/v2"
-	"github.com/yandex-cloud/ydb-go-sdk/v2/connect"
-	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -18,6 +14,11 @@ import (
 	metricscharts "github.com/aalpern/go-metrics-charts"
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
+
+	"github.com/YandexDatabase/ydb-go-monitoring-go-metrics"
+	"github.com/yandex-cloud/ydb-go-sdk/v2"
+	"github.com/yandex-cloud/ydb-go-sdk/v2/connect"
+	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
 
 	"github.com/rs/zerolog"
 )
