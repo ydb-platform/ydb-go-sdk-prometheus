@@ -3,7 +3,7 @@ package go_metrics
 import (
 	"github.com/YandexDatabase/ydb-go-monitoring-go-metrics/internal/common"
 	metrics "github.com/rcrowley/go-metrics"
-	"github.com/yandex-cloud/ydb-go-sdk/v2"
+	ydb "github.com/yandex-cloud/ydb-go-sdk/v2"
 	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
 	"strings"
 )

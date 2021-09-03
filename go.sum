@@ -76,6 +76,12 @@ github.com/yandex-cloud/ydb-go-sdk/v2 v2.4.1 h1:6Q1QkAUyPpXAKxKIzDHQQWKS2JyWnJuB
 github.com/yandex-cloud/ydb-go-sdk/v2 v2.4.1/go.mod h1:r6JWYEYTK+9AwaAdg+wbSIBJnEm+l2cGFqCJ4JFJ6dU=
 github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.0 h1:B0wN2aKQozdPDYQQgFnrcjqGzS/+HdNP/QqiOM9vqU8=
 github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.0/go.mod h1:r6JWYEYTK+9AwaAdg+wbSIBJnEm+l2cGFqCJ4JFJ6dU=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.1 h1:0Fq7o9ANsHv70RjbKE0IYV/jiYpAKtFdhJtOjTDBgWw=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.1/go.mod h1:r6JWYEYTK+9AwaAdg+wbSIBJnEm+l2cGFqCJ4JFJ6dU=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.2-0.20210902150639-3d5b73048ea7 h1:gbHE4DZUP5TIPoH0JdCk0eOUiF16xvV2wlLP0PL5Tew=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.2-0.20210902150639-3d5b73048ea7/go.mod h1:r6JWYEYTK+9AwaAdg+wbSIBJnEm+l2cGFqCJ4JFJ6dU=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.3 h1:DuYNpjzQcfMaK/T0OPkwX10+0IKuBimjF7407qDB+gA=
+github.com/yandex-cloud/ydb-go-sdk/v2 v2.5.3/go.mod h1:r6JWYEYTK+9AwaAdg+wbSIBJnEm+l2cGFqCJ4JFJ6dU=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
@@ -99,6 +105,8 @@ golang.org/x/net v0.0.0-20200822124328-c89045814202/go.mod h1:/O7V0waA8r7cgGh81R
 golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4/go.mod h1:p54w0d4576C0XHj96bSt6lcn1PtDYWL6XObtHCRCNQM=
 golang.org/x/net v0.0.0-20210825183410-e898025ed96a h1:bRuuGXV8wwSdGTB+CtJf+FjgO1APK1CoO39T4BN/XBw=
 golang.org/x/net v0.0.0-20210825183410-e898025ed96a/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
+golang.org/x/net v0.0.0-20210902165921-8d991716f632 h1:900XJE4Rn/iPU+xD5ZznOe4GKKc4AdFK0IO1P6Z3/lQ=
+golang.org/x/net v0.0.0-20210902165921-8d991716f632/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=

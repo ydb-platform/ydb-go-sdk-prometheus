@@ -279,7 +279,7 @@ func processError(prefix string, err error) {
 func tick(ctx context.Context, sp *table.SessionPool) (err error) {
 	now := time.Now()
 	query := `SELECT 1, "1", 1+1;`
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*200)
+	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*50)
 	defer cancel()
 	err = table.Retry(ctx, sp, table.OperationFunc(func(ctx context.Context, session *table.Session) error {
 		txc := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
