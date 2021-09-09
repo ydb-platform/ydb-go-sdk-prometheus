@@ -1,11 +1,14 @@
 package go_metrics
 
 import (
-	"github.com/YandexDatabase/ydb-go-monitoring-go-metrics/internal/common"
+	"strings"
+
 	metrics "github.com/rcrowley/go-metrics"
+
 	ydb "github.com/yandex-cloud/ydb-go-sdk/v2"
 	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
-	"strings"
+
+	"github.com/ydb-platform/ydb-go-monitoring-go-metrics/internal/common"
 )
 
 type gauge struct {

@@ -7,7 +7,7 @@ over `github.com/rcrowley/go-metrics` package
 ```go
 import (
     metrics "github.com/rcrowley/go-metrics"
-    "github.com/YandexDatabase/ydb-go-monitoring-go-metrics"
+    "github.com/ydb-platform/ydb-go-monitoring-go-metrics"
 )
 
 ...

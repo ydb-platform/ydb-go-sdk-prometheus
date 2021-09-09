@@ -1,4 +1,4 @@
-module github.com/YandexDatabase/ydb-go-monitoring-go-metrics
+module github.com/ydb-platform/ydb-go-monitoring-go-metrics
 
 go 1.16
 

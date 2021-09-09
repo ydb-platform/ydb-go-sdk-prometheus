@@ -15,7 +15,7 @@ import (
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
 
-	"github.com/YandexDatabase/ydb-go-monitoring-go-metrics"
+	"github.com/ydb-platform/ydb-go-monitoring-go-metrics"
 	"github.com/yandex-cloud/ydb-go-sdk/v2"
 	"github.com/yandex-cloud/ydb-go-sdk/v2/connect"
 	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
