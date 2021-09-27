@@ -1,18 +1,17 @@
 package go_metrics
 
 import (
-	"strings"
-
 	metrics "github.com/rcrowley/go-metrics"
-
-	ydb "github.com/yandex-cloud/ydb-go-sdk/v2"
-	"github.com/yandex-cloud/ydb-go-sdk/v2/table"
-
-	"github.com/ydb-platform/ydb-go-monitoring-go-metrics/internal/common"
+	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 type gauge struct {
 	g metrics.GaugeFloat64
+}
+
+func (g *gauge) Value() float64 {
+	return g.g.Value()
 }
 
 func (g *gauge) With(tags map[string]string) common.Gauge {
@@ -32,71 +31,102 @@ func (g *gauge) Set(value float64) {
 }
 
 type config struct {
-	registry metrics.Registry
-	prefix   []string
-	tags     []string
+	names     map[common.GaugeType]string
+	delimiter string
+	prefix    string
+	registry  metrics.Registry
 }
 
 func (c *config) Gauge(name string) common.Gauge {
 	return &gauge{
-		g: c.registry.GetOrRegister(
-			strings.Join(append(c.prefix, name), "/")+"?"+strings.Join(c.tags, "&"),
-			metrics.NewGaugeFloat64(),
-		).(metrics.GaugeFloat64),
+		g: c.registry.GetOrRegister(name, metrics.NewGaugeFloat64()).(metrics.GaugeFloat64),
 	}
 }
 
-func (c *config) WithTags(tags map[string]string) common.Config {
-	keyValues := append(make([]string, 0, len(c.tags)+len(tags)), c.tags...)
-	for k, v := range tags {
-		keyValues = append(keyValues, k+"="+v)
+func (c *config) Name(gaugeType common.GaugeType) *string {
+	if n, ok := c.names[gaugeType]; ok {
+		return &n
 	}
-	return &config{
-		registry: c.registry,
-		prefix:   append(c.prefix),
-		tags:     keyValues,
+	return nil
+}
+
+func (c *config) Delimiter() *string {
+	if c.delimiter == "" {
+		return nil
+	}
+	return &c.delimiter
+}
+
+func (c *config) Prefix() *string {
+	if c.prefix == "" {
+		return nil
+	}
+	return &c.prefix
+}
+
+func (c *config) Join(parts ...common.GaugeName) *string {
+	return nil
+}
+
+func (c *config) ErrName(err error) *string {
+	return nil
+}
+
+type option func(*config)
+
+func WithNames(names map[common.GaugeType]string) option {
+	return func(c *config) {
+		c.names = names
 	}
 }
 
-func (c *config) WithPrefix(prefix string) common.Config {
-	return &config{
-		registry: c.registry,
-		prefix:   append(c.prefix, prefix),
+func WithPrefix(prefix string) option {
+	return func(c *config) {
+		c.prefix = prefix
 	}
 }
 
-// DriverTrace makes DriverTrace with solomon metrics publishing
-func DriverTrace(registry metrics.Registry) ydb.DriverTrace {
-	return common.DriverTrace(
-		&config{
-			registry: registry,
-		},
-	)
+func WithDelimiter(delimiter string) option {
+	return func(c *config) {
+		c.delimiter = delimiter
+	}
 }
 
-// ClientTrace makes table.ClientTrace with solomon metrics publishing
-func ClientTrace(registry metrics.Registry) table.ClientTrace {
-	return common.ClientTrace(
-		&config{
-			registry: registry,
-		},
-	)
+// Driver makes Driver with solomon metrics publishing
+func Driver(registry metrics.Registry, opts ...option) trace.Driver {
+	c := &config{
+		registry:  registry,
+		delimiter: "/",
+	}
+	for _, o := range opts {
+		o(c)
+	}
+	return common.Driver(c)
 }
 
-// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
-func SessionPoolTrace(registry metrics.Registry) table.SessionPoolTrace {
-	return common.SessionPoolTrace(
-		&config{
-			registry: registry,
-		},
-	)
-}
-
-// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
-func RetryTrace(registry metrics.Registry) table.RetryTrace {
-	return common.RetryTrace(
-		&config{
-			registry: registry,
-		},
-	)
-}
+//// ClientTrace makes table.ClientTrace with solomon metrics publishing
+//func ClientTrace(registry metrics.Registry) table.ClientTrace {
+//	return common.ClientTrace(
+//		&config{
+//			registry: registry,
+//		},
+//	)
+//}
+//
+//// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
+//func SessionPoolTrace(registry metrics.Registry) table.SessionPoolTrace {
+//	return common.SessionPoolTrace(
+//		&config{
+//			registry: registry,
+//		},
+//	)
+//}
+//
+//// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
+//func RetryTrace(registry metrics.Registry) ydb.RetryTrace {
+//	return common.RetryTrace(
+//		&config{
+//			registry: registry,
+//		},
+//	)
+//}
