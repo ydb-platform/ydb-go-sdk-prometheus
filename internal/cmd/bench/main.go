@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/ydb-platform/ydb-go-sdk/v3/cluster"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"net/http"
@@ -20,25 +19,14 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
-
-	"github.com/rs/zerolog"
 )
 
 var (
-	endpoints    = make(map[cluster.Endpoint]interface{})
-	endpointsMtx sync.Mutex
-	logger       = zerolog.New(os.Stdout)
-	flagSet      = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	connection   string
+	flagSet    = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	connection string
 )
 
 func init() {
-	zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	if e, ok := os.LookupEnv("LOG_LEVEL"); ok {
-		if l, err := zerolog.ParseLevel(e); err == nil {
-			zerolog.SetGlobalLevel(l)
-		}
-	}
 	exp.Exp(metrics.DefaultRegistry)
 	metricscharts.Register()
 	flagSet.Usage = func() {
@@ -68,10 +56,8 @@ func main() {
 		ydb.WithTraceDriver(
 			go_metrics.Driver(
 				metrics.DefaultRegistry,
-				go_metrics.WithPrefix("tick"),
 			).Compose(trace.Driver{
 				OnPessimization: func(info trace.PessimizationStartInfo) func(trace.PessimizationDoneInfo) {
-					logger.Error().Caller().Err(info.Cause).Str("endpoint", info.Address).Msg("pessimization")
 					return nil
 				},
 			}),
@@ -86,8 +72,6 @@ func main() {
 
 	concurrency := 100
 
-	logger.Info().Caller().Int("concurrency", concurrency).Msg("")
-
 	wg := &sync.WaitGroup{}
 	wg.Add(concurrency + 1)
 	//go updateConnStats(wg, db)
@@ -97,15 +81,11 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for {
-				if err := tick(ctx, db.Table()); err != nil {
-					logger.Error().Caller().Err(err).Msg("tick")
-				}
+				_ = tick(ctx, db.Table())
 			}
 		}()
 	}
 	wg.Wait()
-
-	logger.Debug().Caller().Msg("")
 }
 
 func httpServe(wg *sync.WaitGroup) {
@@ -229,9 +209,9 @@ func httpServe(wg *sync.WaitGroup) {
 //}
 
 func tick(ctx context.Context, tbl table.Client) (err error) {
-	now := time.Now()
+	//now := time.Now()
 	query := `SELECT 1, "1", 1+1;`
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*100)
+	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*200)
 	defer cancel()
 	txc := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
 	err, _ = tbl.RetryIdempotent(
@@ -255,26 +235,26 @@ func tick(ctx context.Context, tbl table.Client) (err error) {
 			return nil
 		},
 	)
-	if err == nil {
-		timeout := metrics.DefaultRegistry.GetOrRegister(
-			"tick/timeout",
-			metrics.NewGaugeFloat64(),
-		).(metrics.GaugeFloat64)
-		timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
-		metrics.DefaultRegistry.GetOrRegister(
-			"tick/count",
-			metrics.NewCounter(),
-		).(metrics.Counter).Inc(1)
-	} else {
-		timeout := metrics.DefaultRegistry.GetOrRegister(
-			"tick/errors/timeout",
-			metrics.NewGaugeFloat64(),
-		).(metrics.GaugeFloat64)
-		timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
-		metrics.DefaultRegistry.GetOrRegister(
-			"tick/errors",
-			metrics.NewCounter(),
-		).(metrics.Counter).Inc(1)
-	}
+	//if err == nil {
+	//	timeout := metrics.DefaultRegistry.GetOrRegister(
+	//		"tick/timeout",
+	//		metrics.NewGaugeFloat64(),
+	//	).(metrics.GaugeFloat64)
+	//	timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
+	//	metrics.DefaultRegistry.GetOrRegister(
+	//		"tick/count",
+	//		metrics.NewCounter(),
+	//	).(metrics.Counter).Inc(1)
+	//} else {
+	//	timeout := metrics.DefaultRegistry.GetOrRegister(
+	//		"tick/errors/timeout",
+	//		metrics.NewGaugeFloat64(),
+	//	).(metrics.GaugeFloat64)
+	//	timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
+	//	metrics.DefaultRegistry.GetOrRegister(
+	//		"tick/errors",
+	//		metrics.NewCounter(),
+	//	).(metrics.Counter).Inc(1)
+	//}
 	return err
 }

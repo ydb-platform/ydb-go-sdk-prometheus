@@ -5,6 +5,7 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"strings"
 	"sync"
+	"time"
 )
 
 type GaugeName string
@@ -13,15 +14,16 @@ type GaugeType int
 
 const (
 	GaugeNameError = GaugeType(iota)
+	GaugeNameLatency
+	GaugeNameTotal
+	GaugeNameInFlight
 
+	DriverGaugeNameCluster
 	DriverGaugeNamePessimization
 	DriverGaugeNameGetCredentials
 	DriverGaugeNameDiscovery
-	DriverGaugeNameEndpoints
 	DriverGaugeNameOperation
-	DriverGaugeNameOperationsInFlight
 	DriverGaugeNameStreamRecv
-	DriverGaugeNameStreamsInFlight
 	DriverGaugeNameStream
 )
 
@@ -29,22 +31,24 @@ func defaultName(gaugeType GaugeType) GaugeName {
 	switch gaugeType {
 	case GaugeNameError:
 		return "error"
+	case GaugeNameLatency:
+		return "latency_ms"
+	case GaugeNameTotal:
+		return "total"
+	case GaugeNameInFlight:
+		return "in_flight"
+	case DriverGaugeNameCluster:
+		return "cluster"
 	case DriverGaugeNamePessimization:
 		return "pessimization"
 	case DriverGaugeNameGetCredentials:
 		return "get_credentials"
 	case DriverGaugeNameDiscovery:
 		return "discovery"
-	case DriverGaugeNameEndpoints:
-		return "cluster"
 	case DriverGaugeNameOperation:
 		return "operation"
-	case DriverGaugeNameOperationsInFlight:
-		return "operations_in_flight"
 	case DriverGaugeNameStreamRecv:
 		return "stream_recv"
-	case DriverGaugeNameStreamsInFlight:
-		return "streams_in_flight"
 	case DriverGaugeNameStream:
 		return "stream"
 	default:
@@ -142,25 +146,61 @@ func Driver(c Config) trace.Driver {
 		gauges[GaugeName(*n)] = gauge
 		return gauge
 	}
+	states := make(map[string]int)
+	statesMtx := sync.Mutex{}
 	return trace.Driver{
+		OnConnStateChange: func(info trace.ConnStateChangeInfo) {
+			gauge(
+				name(DriverGaugeNameCluster),
+				GaugeName(info.Before.String()),
+			).Dec()
+			gauge(
+				name(DriverGaugeNameCluster),
+				GaugeName(info.After.String()),
+			).Inc()
+		},
 		OnPessimization: func(info trace.PessimizationStartInfo) func(trace.PessimizationDoneInfo) {
+			start := time.Now()
+			before := info.State
 			return func(info trace.PessimizationDoneInfo) {
 				gauge(
 					name(DriverGaugeNamePessimization),
-				).Inc()
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
 				if info.Error != nil {
 					gauge(
 						name(DriverGaugeNamePessimization),
 						name(GaugeNameError),
 						errName(info.Error),
 					).Inc()
+				} else {
+					gauge(
+						name(DriverGaugeNamePessimization),
+						name(GaugeNameTotal),
+					).Inc()
+				}
+				if before != info.State {
+					gauge(
+						name(DriverGaugeNameCluster),
+						GaugeName(before.String()),
+					).Dec()
+					gauge(
+						name(DriverGaugeNameCluster),
+						GaugeName(info.State.String()),
+					).Inc()
 				}
 			}
 		},
 		OnGetCredentials: func(info trace.GetCredentialsStartInfo) func(trace.GetCredentialsDoneInfo) {
+			start := time.Now()
 			return func(info trace.GetCredentialsDoneInfo) {
 				gauge(
 					name(DriverGaugeNameGetCredentials),
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(DriverGaugeNameGetCredentials),
+					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
@@ -172,9 +212,15 @@ func Driver(c Config) trace.Driver {
 			}
 		},
 		OnDiscovery: func(info trace.DiscoveryStartInfo) func(trace.DiscoveryDoneInfo) {
+			start := time.Now()
 			return func(info trace.DiscoveryDoneInfo) {
 				gauge(
 					name(DriverGaugeNameDiscovery),
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(DriverGaugeNameDiscovery),
+					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
@@ -184,35 +230,79 @@ func Driver(c Config) trace.Driver {
 					).Inc()
 				} else {
 					gauge(
-						name(DriverGaugeNameEndpoints),
+						name(DriverGaugeNameCluster),
+						name(GaugeNameTotal),
 					).Set(float64(len(info.Endpoints)))
+					statesMtx.Lock()
+					for state := range states {
+						states[state] = 0
+						gauge(
+							name(DriverGaugeNameCluster),
+							GaugeName(state),
+						).Set(0)
+					}
+					statesMtx.Unlock()
+					for endpoint, state := range info.Endpoints {
+						statesMtx.Lock()
+						states[state.String()] += 1
+						statesMtx.Unlock()
+						gauge(
+							name(DriverGaugeNameCluster),
+							GaugeName(state.String()),
+						).Inc()
+						gauge(
+							name(DriverGaugeNameCluster),
+							GaugeName(endpoint.String()),
+						).Set(float64(state.Code()))
+					}
 				}
 			}
 		},
 		OnOperation: func(info trace.OperationStartInfo) func(trace.OperationDoneInfo) {
+			start := time.Now()
+			method := GaugeName(strings.TrimLeft(string(info.Method), "/"))
 			gauge(
-				name(DriverGaugeNameOperationsInFlight),
+				name(DriverGaugeNameOperation),
+				method,
+				name(GaugeNameInFlight),
 			).Inc()
 			return func(info trace.OperationDoneInfo) {
+				gauge(
+					name(DriverGaugeNameOperation),
+					method,
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(DriverGaugeNameOperation),
+					method,
+					name(GaugeNameTotal),
+				).Inc()
 				if info.Error != nil {
 					gauge(
 						name(DriverGaugeNameOperation),
+						method,
 						name(GaugeNameError),
 						errName(info.Error),
 					).Inc()
 				}
 				gauge(
 					name(DriverGaugeNameOperation),
+					method,
+					name(GaugeNameInFlight),
 				).Dec()
 			}
 		},
 		OnStream: func(info trace.StreamStartInfo) func(info trace.StreamRecvDoneInfo) func(info trace.StreamDoneInfo) {
+			start := time.Now()
 			gauge(
-				name(DriverGaugeNameStreamsInFlight),
+				name(DriverGaugeNameOperation),
+				name(DriverGaugeNameStream),
+				name(GaugeNameInFlight),
 			).Inc()
 			return func(info trace.StreamRecvDoneInfo) func(info trace.StreamDoneInfo) {
 				gauge(
 					name(DriverGaugeNameStreamRecv),
+					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
@@ -224,6 +314,11 @@ func Driver(c Config) trace.Driver {
 				return func(info trace.StreamDoneInfo) {
 					gauge(
 						name(DriverGaugeNameStream),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+					gauge(
+						name(DriverGaugeNameStream),
+						name(GaugeNameTotal),
 					).Inc()
 					if info.Error != nil {
 						gauge(
@@ -233,7 +328,9 @@ func Driver(c Config) trace.Driver {
 						).Inc()
 					}
 					gauge(
-						name(DriverGaugeNameStreamsInFlight),
+						name(DriverGaugeNameOperation),
+						name(DriverGaugeNameStream),
+						name(GaugeNameInFlight),
 					).Dec()
 				}
 			}
