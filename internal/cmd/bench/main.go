@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"net/http"
 	_ "net/http/pprof"
@@ -52,7 +53,12 @@ func main() {
 		ydb.WithDialTimeout(5*time.Second),
 		ydb.WithAnonymousCredentials(),
 		ydb.WithSessionPoolSizeLimit(100),
-		ydb.WithTraceDriver(go_metrics.Driver(metrics.DefaultRegistry)),
+		ydb.WithTraceDriver(go_metrics.Driver(
+			metrics.DefaultRegistry,
+			go_metrics.WithDetails(common.DriverConnEvents|common.DriverDiscoveryEvents|common.DriverClusterEvents|common.DriverCredentialsEvents),
+			go_metrics.WithDelimiter(" ➠ "),
+		)),
+		ydb.WithGrpcConnectionTTL(time.Second*5),
 		//ydb.WithTableClientTrace(go_metrics.ClientTrace(metrics.DefaultRegistry)),
 		//ydb.WithTableSessionPoolTrace(go_metrics.SessionPoolTrace(metrics.DefaultRegistry)),
 	)

@@ -119,8 +119,7 @@ func Driver(registry metrics.Registry, opts ...option) trace.Driver {
 			common.DriverClusterEvents |
 				common.DriverConnEvents |
 				common.DriverCredentialsEvents |
-				common.DriverDiscoveryEvents |
-				common.DriverRpcEvents
+				common.DriverDiscoveryEvents
 	}
 	return common.Driver(c)
 }

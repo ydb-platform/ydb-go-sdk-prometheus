@@ -13,9 +13,14 @@ const (
 	GaugeNameError = GaugeType(iota)
 	GaugeNameLatency
 	GaugeNameTotal
+	GaugeNameBalance
 	GaugeNameInFlight
+	GaugeNameStatus
 
 	DriverGaugeNameConn
+	DriverGaugeNameConnInvoke
+	DriverGaugeNameConnStream
+	DriverGaugeNameConnStreamRecv
 	DriverGaugeNameCluster
 	DriverGaugeNamePessimize
 	DriverGaugeNameInsert
@@ -24,9 +29,7 @@ const (
 	DriverGaugeNameGet
 	DriverGaugeNameGetCredentials
 	DriverGaugeNameDiscovery
-	DriverGaugeNameOperation
-	DriverGaugeNameStreamRecv
-	DriverGaugeNameStream
+	DriverGaugeNameDiscoveryEndpoints
 )
 
 func defaultName(gaugeType GaugeType) GaugeName {
@@ -39,8 +42,18 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "total"
 	case GaugeNameInFlight:
 		return "in_flight"
+	case GaugeNameBalance:
+		return "balance"
+	case GaugeNameStatus:
+		return "status"
 	case DriverGaugeNameConn:
 		return "conn"
+	case DriverGaugeNameConnInvoke:
+		return "invoke"
+	case DriverGaugeNameConnStream:
+		return "stream"
+	case DriverGaugeNameConnStreamRecv:
+		return "recv"
 	case DriverGaugeNameCluster:
 		return "cluster"
 	case DriverGaugeNameInsert:
@@ -57,12 +70,8 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "get_credentials"
 	case DriverGaugeNameDiscovery:
 		return "discovery"
-	case DriverGaugeNameOperation:
-		return "operation"
-	case DriverGaugeNameStreamRecv:
-		return "stream_recv"
-	case DriverGaugeNameStream:
-		return "stream"
+	case DriverGaugeNameDiscoveryEndpoints:
+		return "endpoints"
 	default:
 		return ""
 	}
@@ -110,7 +119,6 @@ const (
 	DriverConnEvents
 	DriverCredentialsEvents
 	DriverDiscoveryEvents
-	DriverRpcEvents
 )
 
 type Config interface {
