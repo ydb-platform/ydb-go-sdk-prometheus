@@ -31,10 +31,15 @@ func (g *gauge) Set(value float64) {
 }
 
 type config struct {
+	details   common.Details
 	names     map[common.GaugeType]string
 	delimiter string
 	prefix    string
 	registry  metrics.Registry
+}
+
+func (c *config) Details() common.Details {
+	return c.details
 }
 
 func (c *config) Gauge(name string) common.Gauge {
@@ -76,7 +81,9 @@ type option func(*config)
 
 func WithNames(names map[common.GaugeType]string) option {
 	return func(c *config) {
-		c.names = names
+		for k, v := range names {
+			c.names[k] = v
+		}
 	}
 }
 
@@ -92,6 +99,12 @@ func WithDelimiter(delimiter string) option {
 	}
 }
 
+func WithDetails(details common.Details) option {
+	return func(c *config) {
+		c.details = details
+	}
+}
+
 // Driver makes Driver with solomon metrics publishing
 func Driver(registry metrics.Registry, opts ...option) trace.Driver {
 	c := &config{
@@ -100,6 +113,14 @@ func Driver(registry metrics.Registry, opts ...option) trace.Driver {
 	}
 	for _, o := range opts {
 		o(c)
+	}
+	if c.details == 0 {
+		c.details =
+			common.DriverClusterEvents |
+				common.DriverConnEvents |
+				common.DriverCredentialsEvents |
+				common.DriverDiscoveryEvents |
+				common.DriverRpcEvents
 	}
 	return common.Driver(c)
 }

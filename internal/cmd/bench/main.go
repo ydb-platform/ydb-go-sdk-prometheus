@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -53,15 +52,7 @@ func main() {
 		ydb.WithDialTimeout(5*time.Second),
 		ydb.WithAnonymousCredentials(),
 		ydb.WithSessionPoolSizeLimit(100),
-		ydb.WithTraceDriver(
-			go_metrics.Driver(
-				metrics.DefaultRegistry,
-			).Compose(trace.Driver{
-				OnPessimization: func(info trace.PessimizationStartInfo) func(trace.PessimizationDoneInfo) {
-					return nil
-				},
-			}),
-		),
+		ydb.WithTraceDriver(go_metrics.Driver(metrics.DefaultRegistry)),
 		//ydb.WithTableClientTrace(go_metrics.ClientTrace(metrics.DefaultRegistry)),
 		//ydb.WithTableSessionPoolTrace(go_metrics.SessionPoolTrace(metrics.DefaultRegistry)),
 	)
