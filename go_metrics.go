@@ -124,23 +124,28 @@ func Driver(registry metrics.Registry, opts ...option) trace.Driver {
 	return common.Driver(c)
 }
 
-//// ClientTrace makes table.ClientTrace with solomon metrics publishing
-//func ClientTrace(registry metrics.Registry) table.ClientTrace {
-//	return common.ClientTrace(
-//		&config{
-//			registry: registry,
-//		},
-//	)
-//}
-//
-//// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
-//func SessionPoolTrace(registry metrics.Registry) table.SessionPoolTrace {
-//	return common.SessionPoolTrace(
-//		&config{
-//			registry: registry,
-//		},
-//	)
-//}
+// Table makes table.ClientTrace with solomon metrics publishing
+func Table(registry metrics.Registry, opts ...option) trace.Table {
+	c := &config{
+		registry:  registry,
+		delimiter: "/",
+	}
+	for _, o := range opts {
+		o(c)
+	}
+
+	if c.details == 0 {
+		c.details =
+			common.TableSessionEvents |
+				common.TableQueryEvents |
+				common.TableStreamEvents |
+				common.TableTransactionEvents |
+				common.TablePoolEvents |
+				common.TablePoolCycleEvents
+	}
+	return common.TableTrace(c)
+}
+
 //
 //// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
 //func RetryTrace(registry metrics.Registry) ydb.RetryTrace {

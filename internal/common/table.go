@@ -1,168 +1,332 @@
 package common
 
-//// ClientTrace makes table.ClientTrace with metrics publishing
-//func ClientTrace(c Config) table.ClientTrace {
-//	var (
-//		errCounterName                = "ydb_table_client_err_counter"
-//		sessionBalance                = c.Gauge("ydb_table_client_session_balance")
-//		createSessionCounter          = c.Gauge("ydb_table_client_create_session_counter")
-//		keepAliveCounter              = c.Gauge("ydb_table_client_keep_alive_counter")
-//		prepareDataQueryCounter       = c.Gauge("ydb_table_client_prepare_data_query_counter")
-//		executeDataQueryCounter       = c.Gauge("ydb_table_client_execute_data_query_counter")
-//		streamReadTableCounter        = c.Gauge("ydb_table_client_stream_read_table_counter")
-//		streamExecuteScanQueryCounter = c.Gauge("ydb_table_client_stream_execute_scan_query_counter")
-//		beginTransactionCounter       = c.Gauge("ydb_table_client_begin_transaction_counter")
-//		commitTransactionCounter      = c.Gauge("ydb_table_client_commit_transaction_counter")
-//		rollbackTransactionCounter    = c.Gauge("ydb_table_client_rollback_transaction_counter")
-//		transactionsInFlight          = c.Gauge("ydb_table_client_transactions_in_flight")
-//	)
-//	return table.ClientTrace{
-//		OnCreateSession: func(info table.CreateSessionStartInfo) func(table.CreateSessionDoneInfo) {
-//			return func(info table.CreateSessionDoneInfo) {
-//				if info.Error == nil {
-//					sessionBalance.Inc()
-//					createSessionCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("create_session").Inc()
-//				}
-//			}
-//		},
-//		OnKeepAlive: func(info table.KeepAliveStartInfo) func(table.KeepAliveDoneInfo) {
-//			return func(info table.KeepAliveDoneInfo) {
-//				if info.Error == nil {
-//					keepAliveCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("keep_alive").Inc()
-//				}
-//			}
-//		},
-//		OnDeleteSession: func(info table.DeleteSessionStartInfo) func(table.DeleteSessionDoneInfo) {
-//			return func(info table.DeleteSessionDoneInfo) {
-//				sessionBalance.Dec()
-//				if info.Error != nil {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("delete_session").Inc()
-//				}
-//			}
-//		},
-//		OnPrepareDataQuery: func(info table.PrepareDataQueryStartInfo) func(table.PrepareDataQueryDoneInfo) {
-//			return func(info table.PrepareDataQueryDoneInfo) {
-//				if info.Error == nil {
-//					prepareDataQueryCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("prepare_data_query").Inc()
-//				}
-//			}
-//		},
-//		OnExecuteDataQuery: func(info table.ExecuteDataQueryStartInfo) func(table.ExecuteDataQueryDoneInfo) {
-//			return func(info table.ExecuteDataQueryDoneInfo) {
-//				if info.Error == nil {
-//					executeDataQueryCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("execute_data_query").Inc()
-//				}
-//			}
-//		},
-//		OnStreamReadTable: func(info table.StreamReadTableStartInfo) func(table.StreamReadTableDoneInfo) {
-//			return func(info table.StreamReadTableDoneInfo) {
-//				if info.Error == nil {
-//					streamReadTableCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("stream_read_table").Inc()
-//				}
-//			}
-//		},
-//		OnStreamExecuteScanQuery: func(info table.StreamExecuteScanQueryStartInfo) func(table.StreamExecuteScanQueryDoneInfo) {
-//			return func(info table.StreamExecuteScanQueryDoneInfo) {
-//				if info.Error == nil {
-//					streamExecuteScanQueryCounter.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("stream_execute_scan_query").Inc()
-//				}
-//			}
-//		},
-//		OnBeginTransaction: func(info table.BeginTransactionStartInfo) func(table.BeginTransactionDoneInfo) {
-//			return func(info table.BeginTransactionDoneInfo) {
-//				if info.Error == nil {
-//					beginTransactionCounter.Inc()
-//					transactionsInFlight.Inc()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("begin_transaction").Inc()
-//				}
-//			}
-//		},
-//		OnCommitTransaction: func(info table.CommitTransactionStartInfo) func(table.CommitTransactionDoneInfo) {
-//			return func(info table.CommitTransactionDoneInfo) {
-//				if info.Error == nil {
-//					commitTransactionCounter.Inc()
-//					transactionsInFlight.Dec()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("commit_transaction").Inc()
-//				}
-//			}
-//		},
-//		OnRollbackTransaction: func(info table.RollbackTransactionStartInfo) func(table.RollbackTransactionDoneInfo) {
-//			return func(info table.RollbackTransactionDoneInfo) {
-//				if info.Error == nil {
-//					rollbackTransactionCounter.Inc()
-//					transactionsInFlight.Dec()
-//				} else {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("rollback_transaction").Inc()
-//				}
-//			}
-//		},
-//	}
-//}
-//
-//// SessionPoolTrace makes table.SessionPoolTrace with metrics publishing
-//func SessionPoolTrace(c Config) table.SessionPoolTrace {
-//	errCounterName := "ydb_table_session_pool_err_counter"
-//	getCounter := c.Gauge("ydb_table_session_pool_get_counter")
-//	getLatency := c.Gauge("ydb_table_session_pool_get_latency")
-//	getRetries := c.Gauge("ydb_table_session_pool_get_retries")
-//	wait := c.Gauge("ydb_table_session_pool_waitq")
-//	return table.SessionPoolTrace{
-//		OnGet: func(info table.SessionPoolGetStartInfo) func(table.SessionPoolGetDoneInfo) {
-//			return func(info table.SessionPoolGetDoneInfo) {
-//				getCounter.Inc()
-//				getRetries.Set(float64(info.RetryAttempts))
-//				if info.Error != nil {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("get").Inc()
-//				}
-//				getLatency.Set(info.Latency.Seconds())
-//			}
-//		},
-//		OnWait: func(info table.SessionPoolWaitStartInfo) func(table.SessionPoolWaitDoneInfo) {
-//			wait.Inc()
-//			return func(info table.SessionPoolWaitDoneInfo) {
-//				wait.Dec()
-//				if info.Error != nil {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("wait").Inc()
-//				}
-//			}
-//		},
-//		OnTake: func(info table.SessionPoolTakeStartInfo) func(info table.SessionPoolTakeWaitInfo) func(info table.SessionPoolTakeDoneInfo) {
-//			return func(info table.SessionPoolTakeWaitInfo) func(info table.SessionPoolTakeDoneInfo) {
-//				return func(info table.SessionPoolTakeDoneInfo) {
-//					if info.Error != nil {
-//						c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("take").Inc()
-//					}
-//				}
-//			}
-//		},
-//		OnPut: func(info table.SessionPoolPutStartInfo) func(table.SessionPoolPutDoneInfo) {
-//			return func(info table.SessionPoolPutDoneInfo) {
-//				if info.Error != nil {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("put").Inc()
-//				}
-//			}
-//		},
-//		OnClose: func(info table.SessionPoolCloseStartInfo) func(table.SessionPoolCloseDoneInfo) {
-//			return func(info table.SessionPoolCloseDoneInfo) {
-//				if info.Error != nil {
-//					c.WithPrefix(errCounterName).WithTags(tags(info.Error)).Gauge("close").Inc()
-//				}
-//			}
-//		},
-//	}
-//}
-//
+import (
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
+	"time"
+)
+
+const (
+	TableSessionEvents = 1 << iota
+	TableQueryEvents
+	TableStreamEvents
+	TableTransactionEvents
+	TablePoolEvents
+	TablePoolCycleEvents
+)
+
+// TableTrace makes trace.ClientTrace with metrics publishing
+func TableTrace(c Config) trace.Table {
+	t := trace.Table{}
+	gauges := make(map[GaugeName]Gauge)
+	gauge, name, errName := parseConfig(c, &gauges)
+	if c.Details()&TableSessionEvents != 0 {
+		t.OnCreateSession = func(info trace.CreateSessionStartInfo) func(trace.CreateSessionDoneInfo) {
+			return func(info trace.CreateSessionDoneInfo) {
+				gauge(
+					name(TableGaugeNameSession),
+					name(TableGaugeNameCreateSession),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameSession),
+						name(TableGaugeNameCreateSession),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnKeepAlive = func(info trace.KeepAliveStartInfo) func(trace.KeepAliveDoneInfo) {
+			return func(info trace.KeepAliveDoneInfo) {
+				gauge(
+					name(TableGaugeNameSession),
+					name(TableGaugeNameKeepAlive),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameSession),
+						name(TableGaugeNameKeepAlive),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnDeleteSession = func(info trace.DeleteSessionStartInfo) func(trace.DeleteSessionDoneInfo) {
+			start := time.Now()
+			return func(info trace.DeleteSessionDoneInfo) {
+				gauge(
+					name(TableGaugeNameSession),
+					name(TableGaugeNameDeleteSession),
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(TableGaugeNameSession),
+					name(TableGaugeNameDeleteSession),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameSession),
+						name(TableGaugeNameDeleteSession),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	if c.Details()&TableQueryEvents != 0 {
+		t.OnPrepareDataQuery = func(info trace.PrepareDataQueryStartInfo) func(trace.PrepareDataQueryDoneInfo) {
+			return func(info trace.PrepareDataQueryDoneInfo) {
+				gauge(
+					name(TableGaugeNameQuery),
+					name(TableGaugeNamePrepareData),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameQuery),
+						name(TableGaugeNamePrepareData),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnExecuteDataQuery = func(info trace.ExecuteDataQueryStartInfo) func(trace.ExecuteDataQueryDoneInfo) {
+			return func(info trace.ExecuteDataQueryDoneInfo) {
+				gauge(
+					name(TableGaugeNameQuery),
+					name(TableGaugeNameExecuteData),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameQuery),
+						name(TableGaugeNameExecuteData),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	if c.Details()&TableStreamEvents != 0 {
+		t.OnStreamExecuteScanQuery = func(info trace.StreamExecuteScanQueryStartInfo) func(trace.StreamExecuteScanQueryDoneInfo) {
+			return func(info trace.StreamExecuteScanQueryDoneInfo) {
+				gauge(
+					name(TableGaugeNameStream),
+					name(TableGaugeNameStreamExecuteScan),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameStream),
+						name(TableGaugeNameStreamExecuteScan),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnStreamReadTable = func(info trace.StreamReadTableStartInfo) func(trace.StreamReadTableDoneInfo) {
+			return func(info trace.StreamReadTableDoneInfo) {
+				gauge(
+					name(TableGaugeNameStream),
+					name(TableGaugeNameStreamReadTable),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameStream),
+						name(TableGaugeNameStreamReadTable),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	if c.Details()&TableTransactionEvents != 0 {
+		t.OnBeginTransaction = func(info trace.BeginTransactionStartInfo) func(trace.BeginTransactionDoneInfo) {
+			return func(info trace.BeginTransactionDoneInfo) {
+				gauge(
+					name(TableGaugeNameTransaction),
+					name(TableGaugeNameBeginTransaction),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameTransaction),
+						name(TableGaugeNameBeginTransaction),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnCommitTransaction = func(info trace.CommitTransactionStartInfo) func(trace.CommitTransactionDoneInfo) {
+			return func(info trace.CommitTransactionDoneInfo) {
+				gauge(
+					name(TableGaugeNameTransaction),
+					name(TableGaugeNameCommitTransaction),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameTransaction),
+						name(TableGaugeNameCommitTransaction),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnRollbackTransaction = func(info trace.RollbackTransactionStartInfo) func(trace.RollbackTransactionDoneInfo) {
+			return func(info trace.RollbackTransactionDoneInfo) {
+				gauge(
+					name(TableGaugeNameTransaction),
+					name(TableGaugeNameRollbackTransaction),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNameTransaction),
+						name(TableGaugeNameRollbackTransaction),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	if c.Details()&TablePoolEvents != 0 {
+		t.OnPoolCreate = func(info trace.PoolCreateStartInfo) func(trace.PoolCreateDoneInfo) {
+			return func(info trace.PoolCreateDoneInfo) {
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolCreate),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePool),
+						name(TableGaugeNamePoolCreate),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnPoolClose = func(info trace.PoolCloseStartInfo) func(trace.PoolCloseDoneInfo) {
+			return func(info trace.PoolCloseDoneInfo) {
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolClose),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePool),
+						name(TableGaugeNamePoolClose),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	if c.Details()&TablePoolCycleEvents != 0 {
+		t.OnPoolGet = func(info trace.PoolGetStartInfo) func(trace.PoolGetDoneInfo) {
+			return func(info trace.PoolGetDoneInfo) {
+				gauge(
+					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePoolGet),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePoolGet),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnPoolWait = func(info trace.PoolWaitStartInfo) func(trace.PoolWaitDoneInfo) {
+			return func(info trace.PoolWaitDoneInfo) {
+				gauge(
+					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePoolWait),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePoolWait),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnPoolTake = func(info trace.PoolTakeStartInfo) func(info trace.PoolTakeWaitInfo) func(info trace.PoolTakeDoneInfo) {
+			return func(info trace.PoolTakeWaitInfo) func(info trace.PoolTakeDoneInfo) {
+				return func(info trace.PoolTakeDoneInfo) {
+					gauge(
+						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePoolTake),
+						name(GaugeNameTotal),
+					).Inc()
+					if info.Error != nil {
+						gauge(
+							name(TableGaugeNamePoolCycle),
+							name(TableGaugeNamePoolTake),
+							name(GaugeNameError),
+							errName(info.Error),
+						).Inc()
+					}
+				}
+			}
+		}
+		t.OnPoolPut = func(info trace.PoolPutStartInfo) func(trace.PoolPutDoneInfo) {
+			return func(info trace.PoolPutDoneInfo) {
+				gauge(
+					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePoolPut),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePoolPut),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnPoolCloseSession = func(trace.PoolCloseSessionStartInfo) func(trace.PoolCloseSessionDoneInfo) {
+			return func(info trace.PoolCloseSessionDoneInfo) {
+				gauge(
+					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePoolCloseSession),
+					name(GaugeNameTotal),
+				).Inc()
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePoolCloseSession),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+	}
+	return t
+}

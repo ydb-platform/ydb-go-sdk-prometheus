@@ -3,6 +3,7 @@ package common
 import (
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"strings"
+	"sync"
 )
 
 type GaugeName string
@@ -30,6 +31,30 @@ const (
 	DriverGaugeNameGetCredentials
 	DriverGaugeNameDiscovery
 	DriverGaugeNameDiscoveryEndpoints
+
+	TableGaugeNameSession
+	TableGaugeNameCreateSession
+	TableGaugeNameKeepAlive
+	TableGaugeNameDeleteSession
+	TableGaugeNameQuery
+	TableGaugeNamePrepareData
+	TableGaugeNameExecuteData
+	TableGaugeNameStream
+	TableGaugeNameStreamReadTable
+	TableGaugeNameStreamExecuteScan
+	TableGaugeNameTransaction
+	TableGaugeNameBeginTransaction
+	TableGaugeNameCommitTransaction
+	TableGaugeNameRollbackTransaction
+	TableGaugeNamePool
+	TableGaugeNamePoolCreate
+	TableGaugeNamePoolClose
+	TableGaugeNamePoolCycle
+	TableGaugeNamePoolGet
+	TableGaugeNamePoolWait
+	TableGaugeNamePoolTake
+	TableGaugeNamePoolPut
+	TableGaugeNamePoolCloseSession
 )
 
 func defaultName(gaugeType GaugeType) GaugeName {
@@ -72,9 +97,102 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "discovery"
 	case DriverGaugeNameDiscoveryEndpoints:
 		return "endpoints"
+	case TableGaugeNameSession:
+		return "session"
+	case TableGaugeNameCreateSession:
+		return "create"
+	case TableGaugeNameKeepAlive:
+		return "keep_alive"
+	case TableGaugeNameDeleteSession:
+		return "delete"
+	case TableGaugeNameQuery:
+		return "query"
+	case TableGaugeNamePrepareData:
+		return "prepare_data"
+	case TableGaugeNameExecuteData:
+		return "execute_data"
+	case TableGaugeNameStream:
+		return "stream"
+	case TableGaugeNameStreamReadTable:
+		return "read_table"
+	case TableGaugeNameStreamExecuteScan:
+		return "execute_scan"
+	case TableGaugeNameTransaction:
+		return "transaction"
+	case TableGaugeNameBeginTransaction:
+		return "begin"
+	case TableGaugeNameCommitTransaction:
+		return "commit"
+	case TableGaugeNameRollbackTransaction:
+		return "rollback"
+	case TableGaugeNamePool:
+		return "pool"
+	case TableGaugeNamePoolCreate:
+		return "create"
+	case TableGaugeNamePoolClose:
+		return "close"
+	case TableGaugeNamePoolCycle:
+		return "pool_cycle"
+	case TableGaugeNamePoolGet:
+		return "get"
+	case TableGaugeNamePoolWait:
+		return "wait"
+	case TableGaugeNamePoolTake:
+		return "take"
+	case TableGaugeNamePoolPut:
+		return "put"
+	case TableGaugeNamePoolCloseSession:
+		return "close_session"
 	default:
 		return ""
 	}
+}
+
+type (
+	nameFunc    func(gaugeType GaugeType) GaugeName
+	errNameFunc func(err error) GaugeName
+	gaugeFunc   func(parts ...GaugeName) Gauge
+)
+
+func parseConfig(c Config, gauges *map[GaugeName]Gauge) (gaugeFunc, nameFunc, errNameFunc) {
+	prefix := GaugeName("")
+	if c.Prefix() != nil {
+		prefix = GaugeName(*(c.Prefix()))
+	}
+	delimiter := "/"
+	if c.Delimiter() != nil {
+		delimiter = *c.Delimiter()
+	}
+	name := func(gaugeType GaugeType) GaugeName {
+		if n := c.Name(gaugeType); n != nil {
+			return GaugeName(*n)
+		}
+		return defaultName(gaugeType)
+	}
+	errName := func(err error) GaugeName {
+		if n := c.ErrName(err); n != nil {
+			return GaugeName(*n)
+		}
+		return GaugeName(defaultErrName(err, delimiter))
+	}
+	mtx := sync.Mutex{}
+	gauge := func(parts ...GaugeName) Gauge {
+		parts = append([]GaugeName{prefix}, parts...)
+		n := c.Join(parts...)
+		if n == nil {
+			s := defaultJoin(delimiter, parts...)
+			n = &s
+		}
+		mtx.Lock()
+		defer mtx.Unlock()
+		if gauge, ok := (*gauges)[GaugeName(*n)]; ok {
+			return gauge
+		}
+		gauge := c.Gauge(*n)
+		(*gauges)[GaugeName(*n)] = gauge
+		return gauge
+	}
+	return gauge, name, errName
 }
 
 func defaultJoin(delimiter string, parts ...GaugeName) string {
@@ -113,13 +231,6 @@ type Gauge interface {
 }
 
 type Details int
-
-const (
-	DriverClusterEvents = 1 << iota
-	DriverConnEvents
-	DriverCredentialsEvents
-	DriverDiscoveryEvents
-)
 
 type Config interface {
 	Details() Details

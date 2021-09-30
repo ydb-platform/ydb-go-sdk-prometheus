@@ -4,8 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
+	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -47,15 +49,28 @@ func main() {
 		panic(err)
 	}
 	ctx := context.Background()
+	var creds ydb.Option
+	if token, has := os.LookupEnv("YDB_ACCESS_TOKEN_CREDENTIALS"); has {
+		creds = ydb.WithCredentials(ydb.NewAuthTokenCredentials(token))
+	}
+	if v, has := os.LookupEnv("YDB_ANONYMOUS_CREDENTIALS"); has && v == "1" {
+		creds = ydb.WithCredentials(ydb.NewAnonymousCredentials())
+	}
+	connectParams := ydb.MustConnectionString(connection)
 	db, err := ydb.New(
 		ctx,
-		ydb.MustConnectionString(connection),
+		connectParams,
 		ydb.WithDialTimeout(5*time.Second),
-		ydb.WithAnonymousCredentials(),
+		creds,
 		ydb.WithSessionPoolSizeLimit(100),
-		ydb.WithTraceDriver(go_metrics.Driver(
+		ydb.WithSessionPoolIdleThreshold(time.Second*5),
+		/*ydb.WithTraceDriver(go_metrics.Driver(
 			metrics.DefaultRegistry,
 			go_metrics.WithDetails(common.DriverConnEvents|common.DriverDiscoveryEvents|common.DriverClusterEvents|common.DriverCredentialsEvents),
+			go_metrics.WithDelimiter(" ➠ "),
+		)),*/
+		ydb.WithTraceTable(go_metrics.Table(
+			metrics.DefaultRegistry,
 			go_metrics.WithDelimiter(" ➠ "),
 		)),
 		ydb.WithGrpcConnectionTTL(time.Second*5),
@@ -79,6 +94,7 @@ func main() {
 			defer wg.Done()
 			for {
 				_ = tick(ctx, db.Table())
+				_ = selectSimple(ctx, db.Table(), connectParams.Database())
 			}
 		}()
 	}
@@ -205,13 +221,75 @@ func httpServe(wg *sync.WaitGroup) {
 //	}
 //}
 
+func selectSimple(ctx context.Context, c table.Client, prefix string) error {
+	query := fmt.Sprintf(`
+			PRAGMA TablePathPrefix("%s");
+			DECLARE $seriesID AS Uint64;
+			$format = DateTime::Format("%%Y-%%m-%%d");
+			SELECT
+				series_id,
+				title,
+				$format(DateTime::FromSeconds(CAST(DateTime::ToSeconds(DateTime::IntervalFromDays(CAST(release_date AS Int16))) AS Uint32))) AS release_date
+			FROM
+				series
+			WHERE
+				series_id = $seriesID;
+		`, prefix)
+	readTx := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
+	var res resultset.Result
+	err := c.RetryIdempotent(
+		ctx,
+		func(ctx context.Context, s table.Session) (err error) {
+			stmt, err := s.Prepare(ctx, query)
+			if err != nil {
+				return
+			}
+			_, res, err = stmt.Execute(ctx, readTx,
+				table.NewQueryParameters(
+					table.ValueParam("$seriesID", types.Uint64Value(1)),
+				),
+				options.WithQueryCachePolicy(
+					options.WithQueryCachePolicyKeepInCache(),
+				),
+				options.WithCollectStatsModeBasic(),
+			)
+			return
+		},
+	)
+	if err != nil {
+		fmt.Printf("%T %+v", err, err)
+		return err
+	}
+
+	var (
+		id    *uint64
+		title *string
+		date  *[]byte
+	)
+
+	log.Printf("> select_simple_transaction:\n")
+	for res.NextResultSet(ctx, "series_id", "title", "release_date") {
+		for res.NextRow() {
+			err = res.Scan(&id, &title, &date)
+			if err != nil {
+				return err
+			}
+			log.Printf(
+				"  > %d %s %s\n",
+				*id, *title, *date,
+			)
+		}
+	}
+	return res.Err()
+}
+
 func tick(ctx context.Context, tbl table.Client) (err error) {
 	//now := time.Now()
 	query := `SELECT 1, "1", 1+1;`
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*200)
 	defer cancel()
 	txc := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
-	err, _ = tbl.RetryIdempotent(
+	err = tbl.RetryIdempotent(
 		ctx,
 		func(ctx context.Context, session table.Session) error {
 			_, result, err := session.Execute(
