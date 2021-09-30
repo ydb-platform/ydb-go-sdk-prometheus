@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
+	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"net/http"
 	_ "net/http/pprof"
@@ -50,8 +51,13 @@ func main() {
 	db, err := ydb.New(
 		ctx,
 		ydb.MustConnectionString(connection),
+		ydb.WithBalancingConfig(config.BalancerConfig{
+			Algorithm:       config.BalancingAlgorithmP2C,
+			PreferLocal:     false,
+			OpTimeThreshold: time.Second,
+		}),
 		ydb.WithDialTimeout(5*time.Second),
-		ydb.WithAnonymousCredentials(),
+		ydb.WithAccessTokenCredentials(os.Getenv("YDB_ACCESS_TOKEN_CREDENTIALS")),
 		ydb.WithSessionPoolSizeLimit(100),
 		ydb.WithTraceDriver(go_metrics.Driver(
 			metrics.DefaultRegistry,
@@ -211,7 +217,7 @@ func tick(ctx context.Context, tbl table.Client) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*200)
 	defer cancel()
 	txc := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
-	err, _ = tbl.RetryIdempotent(
+	err = tbl.RetryIdempotent(
 		ctx,
 		func(ctx context.Context, session table.Session) error {
 			_, result, err := session.Execute(
