@@ -12,15 +12,73 @@ const (
 	TableStreamEvents
 	TableTransactionEvents
 	TablePoolEvents
-	TablePoolCycleEvents
 )
 
-// TableTrace makes trace.ClientTrace with metrics publishing
-func TableTrace(c Config) trace.Table {
+// Table makes trace.ClientTrace with metrics publishing
+func Table(c Config) trace.Table {
 	t := trace.Table{}
-	gauges := make(map[GaugeName]Gauge)
-	gauge, name, errName := parseConfig(c, &gauges)
+	gauge, name, errName := parseConfig(c, TableGaugeName)
 	if c.Details()&TableSessionEvents != 0 {
+		t.OnPoolRetry = func(info trace.PoolRetryStartInfo) func(trace.PoolRetryDoneInfo) {
+			start := time.Now()
+			idempotent := func() GaugeName {
+				if info.Idempotent {
+					return name(GaugeNameIdempotent)
+				}
+				return name(GaugeNameNonIdempotent)
+			}()
+			return func(info trace.PoolRetryDoneInfo) {
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolRetry),
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolRetry),
+					name(GaugeNameAttempts),
+				).Set(float64(info.Attempts))
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolRetry),
+					idempotent,
+					name(GaugeNameLatency),
+				).Set(float64(time.Since(start).Microseconds()) / 1000.0)
+				gauge(
+					name(TableGaugeNamePool),
+					name(TableGaugeNamePoolRetry),
+					idempotent,
+					name(GaugeNameAttempts),
+				).Set(float64(info.Attempts))
+				if info.Error != nil {
+					gauge(
+						name(TableGaugeNamePool),
+						name(TableGaugeNamePoolRetry),
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+					gauge(
+						name(TableGaugeNamePool),
+						name(TableGaugeNamePoolRetry),
+						idempotent,
+						name(GaugeNameError),
+						errName(info.Error),
+					).Inc()
+				}
+			}
+		}
+		t.OnPoolInit = func(info trace.PoolInitStartInfo) func(trace.PoolInitDoneInfo) {
+			return func(info trace.PoolInitDoneInfo) {
+				gauge(
+					name(TableGaugeNamePool),
+					name(GaugeNameMax),
+				).Set(float64(info.Limit))
+				gauge(
+					name(TableGaugeNamePool),
+					name(GaugeNameMin),
+				).Set(float64(info.KeepAliveMinSize))
+			}
+		}
 		t.OnCreateSession = func(info trace.CreateSessionStartInfo) func(trace.CreateSessionDoneInfo) {
 			return func(info trace.CreateSessionDoneInfo) {
 				gauge(
@@ -34,6 +92,11 @@ func TableTrace(c Config) trace.Table {
 						name(TableGaugeNameCreateSession),
 						name(GaugeNameError),
 						errName(info.Error),
+					).Inc()
+				} else {
+					gauge(
+						name(TableGaugeNamePool),
+						name(GaugeNameBalance),
 					).Inc()
 				}
 			}
@@ -68,6 +131,10 @@ func TableTrace(c Config) trace.Table {
 					name(TableGaugeNameDeleteSession),
 					name(GaugeNameTotal),
 				).Inc()
+				gauge(
+					name(TableGaugeNamePool),
+					name(GaugeNameBalance),
+				).Dec()
 				if info.Error != nil {
 					gauge(
 						name(TableGaugeNameSession),
@@ -219,6 +286,11 @@ func TableTrace(c Config) trace.Table {
 						name(GaugeNameError),
 						errName(info.Error),
 					).Inc()
+				} else {
+					gauge(
+						name(TableGaugeNamePool),
+						name(GaugeNameTotal),
+					).Inc()
 				}
 			}
 		}
@@ -229,6 +301,10 @@ func TableTrace(c Config) trace.Table {
 					name(TableGaugeNamePoolClose),
 					name(GaugeNameTotal),
 				).Inc()
+				gauge(
+					name(TableGaugeNamePool),
+					name(GaugeNameTotal),
+				).Dec()
 				if info.Error != nil {
 					gauge(
 						name(TableGaugeNamePool),
@@ -239,21 +315,24 @@ func TableTrace(c Config) trace.Table {
 				}
 			}
 		}
-	}
-	if c.Details()&TablePoolCycleEvents != 0 {
 		t.OnPoolGet = func(info trace.PoolGetStartInfo) func(trace.PoolGetDoneInfo) {
 			return func(info trace.PoolGetDoneInfo) {
 				gauge(
-					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePool),
 					name(TableGaugeNamePoolGet),
 					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
-						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePool),
 						name(TableGaugeNamePoolGet),
 						name(GaugeNameError),
 						errName(info.Error),
+					).Inc()
+				} else {
+					gauge(
+						name(TableGaugeNamePool),
+						name(GaugeNameInFlight),
 					).Inc()
 				}
 			}
@@ -261,13 +340,13 @@ func TableTrace(c Config) trace.Table {
 		t.OnPoolWait = func(info trace.PoolWaitStartInfo) func(trace.PoolWaitDoneInfo) {
 			return func(info trace.PoolWaitDoneInfo) {
 				gauge(
-					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePool),
 					name(TableGaugeNamePoolWait),
 					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
-						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePool),
 						name(TableGaugeNamePoolWait),
 						name(GaugeNameError),
 						errName(info.Error),
@@ -279,16 +358,21 @@ func TableTrace(c Config) trace.Table {
 			return func(info trace.PoolTakeWaitInfo) func(info trace.PoolTakeDoneInfo) {
 				return func(info trace.PoolTakeDoneInfo) {
 					gauge(
-						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePool),
 						name(TableGaugeNamePoolTake),
 						name(GaugeNameTotal),
 					).Inc()
 					if info.Error != nil {
 						gauge(
-							name(TableGaugeNamePoolCycle),
+							name(TableGaugeNamePool),
 							name(TableGaugeNamePoolTake),
 							name(GaugeNameError),
 							errName(info.Error),
+						).Inc()
+					} else {
+						gauge(
+							name(TableGaugeNamePool),
+							name(GaugeNameInFlight),
 						).Inc()
 					}
 				}
@@ -297,13 +381,17 @@ func TableTrace(c Config) trace.Table {
 		t.OnPoolPut = func(info trace.PoolPutStartInfo) func(trace.PoolPutDoneInfo) {
 			return func(info trace.PoolPutDoneInfo) {
 				gauge(
-					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePool),
 					name(TableGaugeNamePoolPut),
 					name(GaugeNameTotal),
 				).Inc()
+				gauge(
+					name(TableGaugeNamePool),
+					name(GaugeNameInFlight),
+				).Dec()
 				if info.Error != nil {
 					gauge(
-						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePool),
 						name(TableGaugeNamePoolPut),
 						name(GaugeNameError),
 						errName(info.Error),
@@ -314,13 +402,13 @@ func TableTrace(c Config) trace.Table {
 		t.OnPoolCloseSession = func(trace.PoolCloseSessionStartInfo) func(trace.PoolCloseSessionDoneInfo) {
 			return func(info trace.PoolCloseSessionDoneInfo) {
 				gauge(
-					name(TableGaugeNamePoolCycle),
+					name(TableGaugeNamePool),
 					name(TableGaugeNamePoolCloseSession),
 					name(GaugeNameTotal),
 				).Inc()
 				if info.Error != nil {
 					gauge(
-						name(TableGaugeNamePoolCycle),
+						name(TableGaugeNamePool),
 						name(TableGaugeNamePoolCloseSession),
 						name(GaugeNameError),
 						errName(info.Error),

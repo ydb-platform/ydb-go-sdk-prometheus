@@ -3,7 +3,6 @@ package go_metrics
 import (
 	metrics "github.com/rcrowley/go-metrics"
 	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 type gauge struct {
@@ -103,47 +102,6 @@ func WithDetails(details common.Details) option {
 	return func(c *config) {
 		c.details = details
 	}
-}
-
-// Driver makes Driver with solomon metrics publishing
-func Driver(registry metrics.Registry, opts ...option) trace.Driver {
-	c := &config{
-		registry:  registry,
-		delimiter: "/",
-	}
-	for _, o := range opts {
-		o(c)
-	}
-	if c.details == 0 {
-		c.details =
-			common.DriverClusterEvents |
-				common.DriverConnEvents |
-				common.DriverCredentialsEvents |
-				common.DriverDiscoveryEvents
-	}
-	return common.Driver(c)
-}
-
-// Table makes table.ClientTrace with solomon metrics publishing
-func Table(registry metrics.Registry, opts ...option) trace.Table {
-	c := &config{
-		registry:  registry,
-		delimiter: "/",
-	}
-	for _, o := range opts {
-		o(c)
-	}
-
-	if c.details == 0 {
-		c.details =
-			common.TableSessionEvents |
-				common.TableQueryEvents |
-				common.TableStreamEvents |
-				common.TableTransactionEvents |
-				common.TablePoolEvents |
-				common.TablePoolCycleEvents
-	}
-	return common.TableTrace(c)
 }
 
 //

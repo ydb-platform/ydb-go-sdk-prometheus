@@ -1,7 +1,6 @@
 package common
 
 import (
-	"sync"
 	"time"
 
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
@@ -16,47 +15,8 @@ const (
 
 // Driver makes Driver with metrics publishing
 func Driver(c Config) trace.Driver {
-	gauges := make(map[GaugeName]Gauge)
-	prefix := GaugeName("")
-	if c.Prefix() != nil {
-		prefix = GaugeName(*(c.Prefix()))
-	}
-	delimiter := "/"
-	if c.Delimiter() != nil {
-		delimiter = *c.Delimiter()
-	}
-	name := func(gaugeType GaugeType) GaugeName {
-		if n := c.Name(gaugeType); n != nil {
-			return GaugeName(*n)
-		}
-		return defaultName(gaugeType)
-	}
-	errName := func(err error) GaugeName {
-		if n := c.ErrName(err); n != nil {
-			return GaugeName(*n)
-		}
-		return GaugeName(defaultErrName(err, delimiter))
-	}
-	mtx := sync.Mutex{}
-	gauge := func(parts ...GaugeName) Gauge {
-		parts = append([]GaugeName{prefix}, parts...)
-		n := c.Join(parts...)
-		if n == nil {
-			s := defaultJoin(delimiter, parts...)
-			n = &s
-		}
-		mtx.Lock()
-		defer mtx.Unlock()
-		if gauge, ok := gauges[GaugeName(*n)]; ok {
-			return gauge
-		}
-		gauge := c.Gauge(*n)
-		gauges[GaugeName(*n)] = gauge
-		return gauge
-	}
-	//states := make(map[string]int)
-	//statesMtx := sync.Mutex{}
 	t := trace.Driver{}
+	gauge, name, errName := parseConfig(c, DriverGaugeName)
 	if c.Details()&DriverConnEvents != 0 {
 		t.OnConnNew = func(info trace.ConnNewInfo) {
 			gauge(

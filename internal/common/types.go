@@ -12,14 +12,20 @@ type GaugeType int
 
 const (
 	GaugeNameError = GaugeType(iota)
+	GaugeNameAttempts
 	GaugeNameLatency
+	GaugeNameMin
+	GaugeNameMax
 	GaugeNameTotal
 	GaugeNameBalance
 	GaugeNameInFlight
 	GaugeNameStatus
 	GaugeNameLocal
 	GaugeNameSet
+	GaugeNameIdempotent
+	GaugeNameNonIdempotent
 
+	DriverGaugeName
 	DriverGaugeNameConn
 	DriverGaugeNameConnDial
 	DriverGaugeNameConnInvoke
@@ -35,6 +41,7 @@ const (
 	DriverGaugeNameDiscovery
 	DriverGaugeNameDiscoveryEndpoints
 
+	TableGaugeName
 	TableGaugeNameSession
 	TableGaugeNameCreateSession
 	TableGaugeNameKeepAlive
@@ -50,9 +57,9 @@ const (
 	TableGaugeNameCommitTransaction
 	TableGaugeNameRollbackTransaction
 	TableGaugeNamePool
+	TableGaugeNamePoolRetry
 	TableGaugeNamePoolCreate
 	TableGaugeNamePoolClose
-	TableGaugeNamePoolCycle
 	TableGaugeNamePoolGet
 	TableGaugeNamePoolWait
 	TableGaugeNamePoolTake
@@ -64,8 +71,14 @@ func defaultName(gaugeType GaugeType) GaugeName {
 	switch gaugeType {
 	case GaugeNameError:
 		return "error"
+	case GaugeNameAttempts:
+		return "attempts"
 	case GaugeNameLatency:
 		return "latency_ms"
+	case GaugeNameMin:
+		return "min"
+	case GaugeNameMax:
+		return "max"
 	case GaugeNameTotal:
 		return "total"
 	case GaugeNameInFlight:
@@ -78,6 +91,12 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "local"
 	case GaugeNameSet:
 		return "set"
+	case GaugeNameIdempotent:
+		return "idempotent"
+	case GaugeNameNonIdempotent:
+		return "non-idempotent"
+	case DriverGaugeName:
+		return "driver"
 	case DriverGaugeNameConn:
 		return "conn"
 	case DriverGaugeNameConnDial:
@@ -106,6 +125,8 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "discovery"
 	case DriverGaugeNameDiscoveryEndpoints:
 		return "endpoints"
+	case TableGaugeName:
+		return "table"
 	case TableGaugeNameSession:
 		return "session"
 	case TableGaugeNameCreateSession:
@@ -136,12 +157,12 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "rollback"
 	case TableGaugeNamePool:
 		return "pool"
+	case TableGaugeNamePoolRetry:
+		return "retry"
 	case TableGaugeNamePoolCreate:
 		return "create"
 	case TableGaugeNamePoolClose:
 		return "close"
-	case TableGaugeNamePoolCycle:
-		return "pool_cycle"
 	case TableGaugeNamePoolGet:
 		return "get"
 	case TableGaugeNamePoolWait:
@@ -163,20 +184,23 @@ type (
 	gaugeFunc   func(parts ...GaugeName) Gauge
 )
 
-func parseConfig(c Config, gauges *map[GaugeName]Gauge) (gaugeFunc, nameFunc, errNameFunc) {
-	prefix := GaugeName("")
-	if c.Prefix() != nil {
-		prefix = GaugeName(*(c.Prefix()))
-	}
-	delimiter := "/"
-	if c.Delimiter() != nil {
-		delimiter = *c.Delimiter()
-	}
+func parseConfig(c Config, scopes ...GaugeType) (gaugeFunc, nameFunc, errNameFunc) {
 	name := func(gaugeType GaugeType) GaugeName {
 		if n := c.Name(gaugeType); n != nil {
 			return GaugeName(*n)
 		}
 		return defaultName(gaugeType)
+	}
+	prefix := make([]GaugeName, 0, 1+len(scopes))
+	if c.Prefix() != nil {
+		prefix = append(prefix, GaugeName(*(c.Prefix())))
+	}
+	for _, path := range scopes {
+		prefix = append(prefix, name(path))
+	}
+	delimiter := "/"
+	if c.Delimiter() != nil {
+		delimiter = *c.Delimiter()
 	}
 	errName := func(err error) GaugeName {
 		if n := c.ErrName(err); n != nil {
@@ -184,9 +208,10 @@ func parseConfig(c Config, gauges *map[GaugeName]Gauge) (gaugeFunc, nameFunc, er
 		}
 		return GaugeName(defaultErrName(err, delimiter))
 	}
+	gauges := make(map[GaugeName]Gauge)
 	mtx := sync.Mutex{}
 	gauge := func(parts ...GaugeName) Gauge {
-		parts = append([]GaugeName{prefix}, parts...)
+		parts = append(prefix, parts...)
 		n := c.Join(parts...)
 		if n == nil {
 			s := defaultJoin(delimiter, parts...)
@@ -194,11 +219,11 @@ func parseConfig(c Config, gauges *map[GaugeName]Gauge) (gaugeFunc, nameFunc, er
 		}
 		mtx.Lock()
 		defer mtx.Unlock()
-		if gauge, ok := (*gauges)[GaugeName(*n)]; ok {
+		if gauge, ok := (gauges)[GaugeName(*n)]; ok {
 			return gauge
 		}
 		gauge := c.Gauge(*n)
-		(*gauges)[GaugeName(*n)] = gauge
+		(gauges)[GaugeName(*n)] = gauge
 		return gauge
 	}
 	return gauge, name, errName

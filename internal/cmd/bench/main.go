@@ -45,6 +45,13 @@ func init() {
 	)
 }
 
+type quet struct {
+}
+
+func (q quet) Write(p []byte) (n int, err error) {
+	return len(p), nil
+}
+
 func main() {
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
@@ -71,23 +78,24 @@ func main() {
 		}),
 		ydb.WithSessionPoolSizeLimit(100),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		/*ydb.WithTraceDriver(go_metrics.Driver(
-			metrics.DefaultRegistry,
-			go_metrics.WithDetails(common.DriverConnEvents|common.DriverDiscoveryEvents|common.DriverClusterEvents|common.DriverCredentialsEvents),
-			go_metrics.WithDelimiter(" ➠ "),
-		)),*/
+		//ydb.WithTraceDriver(go_metrics.Driver(
+		//	metrics.DefaultRegistry,
+		//	go_metrics.WithDetails(common.DriverConnEvents|common.DriverDiscoveryEvents|common.DriverClusterEvents|common.DriverCredentialsEvents),
+		//	go_metrics.WithDelimiter(" ➠ "),
+		//)),
 		ydb.WithTraceTable(go_metrics.Table(
 			metrics.DefaultRegistry,
 			go_metrics.WithDelimiter(" ➠ "),
 		)),
 		ydb.WithGrpcConnectionTTL(time.Second*5),
-		//ydb.WithTableClientTrace(go_metrics.ClientTrace(metrics.DefaultRegistry)),
 		//ydb.WithTableSessionPoolTrace(go_metrics.SessionPoolTrace(metrics.DefaultRegistry)),
 	)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
+
+	log.SetOutput(&quet{})
 
 	concurrency := 100
 
@@ -264,7 +272,6 @@ func selectSimple(ctx context.Context, c table.Client, prefix string) error {
 		},
 	)
 	if err != nil {
-		fmt.Printf("%T %+v", err, err)
 		return err
 	}
 
