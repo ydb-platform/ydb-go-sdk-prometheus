@@ -4,9 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,12 +12,17 @@ import (
 	"time"
 
 	metricscharts "github.com/aalpern/go-metrics-charts"
-	metrics "github.com/rcrowley/go-metrics"
+	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
 
-	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
+	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
+
+	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 )
 
 var (
@@ -62,6 +64,11 @@ func main() {
 		connectParams,
 		ydb.WithDialTimeout(5*time.Second),
 		creds,
+		ydb.WithBalancingConfig(config.BalancerConfig{
+			Algorithm:       config.BalancingAlgorithmP2C,
+			PreferLocal:     false,
+			OpTimeThreshold: time.Second,
+		}),
 		ydb.WithSessionPoolSizeLimit(100),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
 		/*ydb.WithTraceDriver(go_metrics.Driver(

@@ -1,9 +1,17 @@
 package common
 
 import (
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"sync"
 	"time"
+
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
+)
+
+const (
+	DriverClusterEvents = 1 << iota
+	DriverConnEvents
+	DriverCredentialsEvents
+	DriverDiscoveryEvents
 )
 
 // Driver makes Driver with metrics publishing
@@ -60,6 +68,16 @@ func Driver(c Config) trace.Driver {
 				name(GaugeNameStatus),
 				GaugeName(info.State.String()),
 			).Inc()
+			gauge(
+				name(DriverGaugeNameConn),
+				GaugeName(info.Endpoint.Address()),
+				name(GaugeNameLocal),
+			).Set(func() float64 {
+				if info.Endpoint.LocalDC() {
+					return 1
+				}
+				return 0
+			}())
 		}
 		t.OnConnClose = func(info trace.ConnCloseInfo) {
 			gauge(
@@ -94,6 +112,7 @@ func Driver(c Config) trace.Driver {
 		}
 		t.OnConnDial = func(info trace.ConnDialStartInfo) func(trace.ConnDialDoneInfo) {
 			endpoint := info.Endpoint
+			start := time.Now()
 			return func(info trace.ConnDialDoneInfo) {
 				if info.Error != nil {
 					gauge(
@@ -107,24 +126,37 @@ func Driver(c Config) trace.Driver {
 						name(DriverGaugeNameConn),
 						name(GaugeNameInFlight),
 					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnDial),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnDial),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnDial),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnDial),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
 				}
 			}
 		}
 		t.OnConnDisconnect = func(info trace.ConnDisconnectStartInfo) func(trace.ConnDisconnectDoneInfo) {
 			return func(info trace.ConnDisconnectDoneInfo) {
-				if info.Error != nil {
-					gauge(
-						name(DriverGaugeNameConn),
-						GaugeName(info.State.String()),
-						name(GaugeNameError),
-						errName(info.Error),
-					).Inc()
-				} else {
-					gauge(
-						name(DriverGaugeNameConn),
-						name(GaugeNameInFlight),
-					).Dec()
-				}
+				gauge(
+					name(DriverGaugeNameConn),
+					name(GaugeNameInFlight),
+				).Dec()
 			}
 		}
 		t.OnConnInvoke = func(info trace.ConnInvokeStartInfo) func(trace.ConnInvokeDoneInfo) {
@@ -140,14 +172,9 @@ func Driver(c Config) trace.Driver {
 				GaugeName(method),
 				name(GaugeNameTotal),
 			).Inc()
+			endpoint := info.Endpoint
 			start := time.Now()
 			return func(info trace.ConnInvokeDoneInfo) {
-				gauge(
-					name(DriverGaugeNameConn),
-					name(DriverGaugeNameConnInvoke),
-					GaugeName(method),
-					name(GaugeNameLatency),
-				).Set(float64(time.Since(start).Microseconds()) / 1000.)
 				if info.Error != nil {
 					gauge(
 						name(DriverGaugeNameConn),
@@ -156,6 +183,39 @@ func Driver(c Config) trace.Driver {
 						name(GaugeNameError),
 						errName(info.Error),
 					).Inc()
+				} else {
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnInvoke),
+						GaugeName(method),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnInvoke),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnInvoke),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnInvoke),
+						GaugeName(endpoint.Address()),
+						GaugeName(method),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnInvoke),
+						GaugeName(endpoint.Address()),
+						GaugeName(method),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
 				}
 			}
 		}
@@ -172,6 +232,7 @@ func Driver(c Config) trace.Driver {
 				GaugeName(method),
 				name(GaugeNameTotal),
 			).Inc()
+			endpoint := info.Endpoint
 			start := time.Now()
 			counter := 0
 			return func(info trace.ConnNewStreamRecvInfo) func(trace.ConnNewStreamDoneInfo) {
@@ -205,8 +266,35 @@ func Driver(c Config) trace.Driver {
 						name(DriverGaugeNameConnStream),
 						name(DriverGaugeNameConnStreamRecv),
 						GaugeName(method),
+						name(GaugeNameSet),
 						name(GaugeNameTotal),
 					).Set(float64(counter))
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnStream),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnStream),
+						GaugeName(endpoint.Address()),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnStream),
+						GaugeName(endpoint.Address()),
+						GaugeName(method),
+						name(GaugeNameTotal),
+					).Inc()
+					gauge(
+						name(DriverGaugeNameConn),
+						name(DriverGaugeNameConnStream),
+						GaugeName(endpoint.Address()),
+						GaugeName(method),
+						name(GaugeNameLatency),
+					).Set(float64(time.Since(start).Microseconds()) / 1000.)
 					if info.Error != nil {
 						gauge(
 							name(DriverGaugeNameConn),

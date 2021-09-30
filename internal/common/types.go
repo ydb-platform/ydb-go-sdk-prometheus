@@ -17,8 +17,11 @@ const (
 	GaugeNameBalance
 	GaugeNameInFlight
 	GaugeNameStatus
+	GaugeNameLocal
+	GaugeNameSet
 
 	DriverGaugeNameConn
+	DriverGaugeNameConnDial
 	DriverGaugeNameConnInvoke
 	DriverGaugeNameConnStream
 	DriverGaugeNameConnStreamRecv
@@ -71,8 +74,14 @@ func defaultName(gaugeType GaugeType) GaugeName {
 		return "balance"
 	case GaugeNameStatus:
 		return "status"
+	case GaugeNameLocal:
+		return "local"
+	case GaugeNameSet:
+		return "set"
 	case DriverGaugeNameConn:
 		return "conn"
+	case DriverGaugeNameConnDial:
+		return "dial"
 	case DriverGaugeNameConnInvoke:
 		return "invoke"
 	case DriverGaugeNameConnStream:

@@ -1,8 +1,9 @@
 package common
 
 import (
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"time"
+
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 const (
