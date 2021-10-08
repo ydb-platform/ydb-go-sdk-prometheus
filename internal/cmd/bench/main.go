@@ -16,7 +16,7 @@ import (
 	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
 
-	go_metrics "github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
+	go_metrics "github.com/ydb-platform/ydb-go-sdk-metrics-local"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"

@@ -8,7 +8,7 @@ over `github.com/rcrowley/go-metrics` package
 import (
     metrics "github.com/rcrowley/go-metrics"
     "github.com/ydb-platform/ydb-go-sdk/v3"
-    "github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
+    "github.com/ydb-platform/ydb-go-sdk-metrics-local"
 )
 
 ...

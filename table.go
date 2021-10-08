@@ -1,4 +1,4 @@
-package go_metrics
+package metrics_local
 
 import (
 	"github.com/rcrowley/go-metrics"

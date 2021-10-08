@@ -1,4 +1,4 @@
-module github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics
+module github.com/ydb-platform/ydb-go-sdk-metrics-local
 
 go 1.16
 
