@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	common "github.com/ydb-platform/ydb-go-sdk-metrics"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,14 +16,13 @@ import (
 	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-metrics/exp"
 
+	go_metrics "github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
-
-	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 )
 
 var (
@@ -70,6 +70,7 @@ func main() {
 		ctx,
 		connectParams,
 		ydb.WithDialTimeout(5*time.Second),
+		//ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
 		creds,
 		ydb.WithBalancingConfig(config.BalancerConfig{
 			Algorithm:       config.BalancingAlgorithmP2C,
@@ -78,17 +79,24 @@ func main() {
 		}),
 		ydb.WithSessionPoolSizeLimit(100),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		//ydb.WithTraceDriver(go_metrics.Driver(
-		//	metrics.DefaultRegistry,
-		//	go_metrics.WithDetails(common.DriverConnEvents|common.DriverDiscoveryEvents|common.DriverClusterEvents|common.DriverCredentialsEvents),
-		//	go_metrics.WithDelimiter(" ➠ "),
-		//)),
+		ydb.WithTraceDriver(go_metrics.Driver(
+			metrics.DefaultRegistry,
+			go_metrics.WithDetails(
+				common.DriverConnEvents|
+					common.DriverDiscoveryEvents|
+					common.DriverClusterEvents|
+					common.DriverCredentialsEvents,
+			),
+			go_metrics.WithDelimiter(" ➠ "),
+		)),
 		ydb.WithTraceTable(go_metrics.Table(
 			metrics.DefaultRegistry,
 			go_metrics.WithDelimiter(" ➠ "),
+			go_metrics.WithDetails(
+				1|16|64|128|256,
+			),
 		)),
 		ydb.WithGrpcConnectionTTL(time.Second*5),
-		//ydb.WithTableSessionPoolTrace(go_metrics.SessionPoolTrace(metrics.DefaultRegistry)),
 	)
 	if err != nil {
 		panic(err)
@@ -97,7 +105,7 @@ func main() {
 
 	log.SetOutput(&quet{})
 
-	concurrency := 100
+	concurrency := 200
 
 	wg := &sync.WaitGroup{}
 	wg.Add(concurrency + 1)

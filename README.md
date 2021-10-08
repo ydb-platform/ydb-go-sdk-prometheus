@@ -7,18 +7,21 @@ over `github.com/rcrowley/go-metrics` package
 ```go
 import (
     metrics "github.com/rcrowley/go-metrics"
+    "github.com/ydb-platform/ydb-go-sdk/v3"
     "github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics"
 )
 
 ...
 	ctx := context.Background()
 	ctx = ydb.WithDriverTrace(ctx, go_metrics.DriverTrace(metrics.DefaultRegistry))
-	ctx = table.WithClientTrace(ctx, go_metrics.ClientTrace(metrics.DefaultRegistry))
+	ctx = table.WithTraceClient(ctx, go_metrics.ClientTrace(metrics.DefaultRegistry))
 	ctx = table.WithSessionPoolTrace(ctx, go_metrics.SessionPoolTrace(metrics.DefaultRegistry))
 	ctx = table.WithRetryTrace(ctx, go_metrics.RetryTrace(metrics.DefaultRegistry))
-	cluster, err := connect.New(
+	db, err := ydb.New(
 		ctx,
-		connect.MustConnectionString(connection),
+		ydb.MustConnectionString(connection),
+		ydb.WithTraceDriver(go_metrics.Driver(metrics.DefaultRegistry)),
+		ydb.WithTraceTable(go_metrics.Table(metrics.DefaultRegistry)),
 	)
 
 ```
@@ -29,13 +32,12 @@ import (
     metricscharts "github.com/aalpern/go-metrics-charts"
     metrics "github.com/rcrowley/go-metrics"
     "github.com/rcrowley/go-metrics/exp"
-
 )
 
 ...
-	exp.Exp(metrics.DefaultRegistry)
+    exp.Exp(metrics.DefaultRegistry)
     metricscharts.Register()
 
-	_ = http.ListenAndServe(":8080", nil)
+    _ = http.ListenAndServe(":8080", nil)
 ```
 Metric charts you can see at `http://localhost:8080/debug/metrics/charts` page in your browser
