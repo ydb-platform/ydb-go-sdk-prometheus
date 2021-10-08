@@ -2,7 +2,7 @@ package go_metrics
 
 import (
 	"github.com/rcrowley/go-metrics"
-	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
+	common "github.com/ydb-platform/ydb-go-sdk-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 

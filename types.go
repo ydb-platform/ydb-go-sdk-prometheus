@@ -1,12 +1,12 @@
 package go_metrics
 
 import (
-	metrics "github.com/rcrowley/go-metrics"
-	"github.com/ydb-platform/ydb-go-sdk-metrics-go-metrics/internal/common"
+	go_metrics "github.com/rcrowley/go-metrics"
+	common "github.com/ydb-platform/ydb-go-sdk-metrics"
 )
 
 type gauge struct {
-	g metrics.GaugeFloat64
+	g go_metrics.GaugeFloat64
 }
 
 func (g *gauge) Value() float64 {
@@ -31,10 +31,10 @@ func (g *gauge) Set(value float64) {
 
 type config struct {
 	details   common.Details
-	names     map[common.GaugeType]string
+	names     map[common.Type]string
 	delimiter string
 	prefix    string
-	registry  metrics.Registry
+	registry  go_metrics.Registry
 }
 
 func (c *config) Details() common.Details {
@@ -43,11 +43,11 @@ func (c *config) Details() common.Details {
 
 func (c *config) Gauge(name string) common.Gauge {
 	return &gauge{
-		g: c.registry.GetOrRegister(name, metrics.NewGaugeFloat64()).(metrics.GaugeFloat64),
+		g: c.registry.GetOrRegister(name, go_metrics.NewGaugeFloat64()).(go_metrics.GaugeFloat64),
 	}
 }
 
-func (c *config) Name(gaugeType common.GaugeType) *string {
+func (c *config) Name(gaugeType common.Type) *string {
 	if n, ok := c.names[gaugeType]; ok {
 		return &n
 	}
@@ -68,7 +68,7 @@ func (c *config) Prefix() *string {
 	return &c.prefix
 }
 
-func (c *config) Join(parts ...common.GaugeName) *string {
+func (c *config) Join(parts ...common.Name) *string {
 	return nil
 }
 
@@ -78,7 +78,7 @@ func (c *config) ErrName(err error) *string {
 
 type option func(*config)
 
-func WithNames(names map[common.GaugeType]string) option {
+func WithNames(names map[common.Type]string) option {
 	return func(c *config) {
 		for k, v := range names {
 			c.names[k] = v
@@ -107,7 +107,7 @@ func WithDetails(details common.Details) option {
 //
 //// SessionPoolTrace makes table.SessionPoolTrace with solomon metrics publishing
 //func RetryTrace(registry metrics.Registry) ydb.RetryTrace {
-//	return common.RetryTrace(
+//	return metrics.RetryTrace(
 //		&config{
 //			registry: registry,
 //		},
