@@ -1,6 +1,6 @@
-# go_metrics
+# metrics_local
 
-go_metrics package helps to create ydb-go-sdk traces with monitoring 
+metrics_local package helps to create ydb-go-sdk traces with monitoring 
 over `github.com/rcrowley/go-metrics` package
 
 ## Usage
@@ -8,20 +8,20 @@ over `github.com/rcrowley/go-metrics` package
 import (
     metrics "github.com/rcrowley/go-metrics"
     "github.com/ydb-platform/ydb-go-sdk/v3"
-    "github.com/ydb-platform/ydb-go-sdk-metrics-local"
+    "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
 ...
 	ctx := context.Background()
-	ctx = ydb.WithDriverTrace(ctx, go_metrics.DriverTrace(metrics.DefaultRegistry))
-	ctx = table.WithTraceClient(ctx, go_metrics.ClientTrace(metrics.DefaultRegistry))
-	ctx = table.WithSessionPoolTrace(ctx, go_metrics.SessionPoolTrace(metrics.DefaultRegistry))
-	ctx = table.WithRetryTrace(ctx, go_metrics.RetryTrace(metrics.DefaultRegistry))
+	ctx = ydb.WithDriverTrace(ctx, metrics_local.DriverTrace(metrics.DefaultRegistry))
+	ctx = table.WithTraceClient(ctx, metrics_local.ClientTrace(metrics.DefaultRegistry))
+	ctx = table.WithSessionPoolTrace(ctx, metrics_local.SessionPoolTrace(metrics.DefaultRegistry))
+	ctx = table.WithRetryTrace(ctx, metrics_local.RetryTrace(metrics.DefaultRegistry))
 	db, err := ydb.New(
 		ctx,
 		ydb.MustConnectionString(connection),
-		ydb.WithTraceDriver(go_metrics.Driver(metrics.DefaultRegistry)),
-		ydb.WithTraceTable(go_metrics.Table(metrics.DefaultRegistry)),
+		ydb.WithTraceDriver(metrics_local.Driver(metrics.DefaultRegistry)),
+		ydb.WithTraceTable(metrics_local.Table(metrics.DefaultRegistry)),
 	)
 
 ```

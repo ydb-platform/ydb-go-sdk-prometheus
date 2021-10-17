@@ -1,26 +1,22 @@
-package metrics_local
+package sensors
 
 import (
-	"github.com/rcrowley/go-metrics"
-	common "github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/ydb-platform/ydb-go-sdk-sensors"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 // Driver makes Driver with solomon metrics publishing
-func Driver(registry metrics.Registry, opts ...option) trace.Driver {
+func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
 	c := &config{
 		registry:  registry,
-		delimiter: "/",
+		namespace: "ydb_go_sdk",
 	}
 	for _, o := range opts {
 		o(c)
 	}
 	if c.details == 0 {
-		c.details =
-			common.DriverClusterEvents |
-				common.DriverConnEvents |
-				common.DriverCredentialsEvents |
-				common.DriverDiscoveryEvents
+		c.details = ^sensors.Details(0)
 	}
-	return common.Driver(c)
+	return sensors.Driver(c)
 }

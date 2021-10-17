@@ -4,35 +4,32 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	common "github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	sensors "github.com/ydb-platform/ydb-go-sdk-prometheus"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"log"
+	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"path"
 	"sync"
 	"time"
 
-	metricscharts "github.com/aalpern/go-metrics-charts"
-	"github.com/rcrowley/go-metrics"
-	"github.com/rcrowley/go-metrics/exp"
-
-	go_metrics "github.com/ydb-platform/ydb-go-sdk-metrics-local"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 )
 
 var (
 	flagSet    = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	connection string
+	port       int
 )
 
 func init() {
-	exp.Exp(metrics.DefaultRegistry)
-	metricscharts.Register()
 	flagSet.Usage = func() {
 		out := flagSet.Output()
 		_, _ = fmt.Fprintf(out, "Usage:\n%s command [options]\n", os.Args[0])
@@ -43,6 +40,11 @@ func init() {
 		"ydb", "",
 		"YDB connection string",
 	)
+	flagSet.IntVar(&port,
+		"port", 8080,
+		"prometheus agent port",
+	)
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
 type quet struct {
@@ -60,298 +62,187 @@ func main() {
 	ctx := context.Background()
 	var creds ydb.Option
 	if token, has := os.LookupEnv("YDB_ACCESS_TOKEN_CREDENTIALS"); has {
-		creds = ydb.WithCredentials(ydb.NewAuthTokenCredentials(token))
+		creds = ydb.WithAccessTokenCredentials(token)
 	}
 	if v, has := os.LookupEnv("YDB_ANONYMOUS_CREDENTIALS"); has && v == "1" {
-		creds = ydb.WithCredentials(ydb.NewAnonymousCredentials())
+		creds = ydb.WithAnonymousCredentials()
 	}
-	connectParams := ydb.MustConnectionString(connection)
+	registry := prometheus.NewRegistry()
 	db, err := ydb.New(
 		ctx,
-		connectParams,
+		ydb.WithConnectionString(connection),
 		ydb.WithDialTimeout(5*time.Second),
-		//ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
+		ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
 		creds,
 		ydb.WithBalancingConfig(config.BalancerConfig{
 			Algorithm:       config.BalancingAlgorithmP2C,
 			PreferLocal:     false,
 			OpTimeThreshold: time.Second,
 		}),
-		ydb.WithSessionPoolSizeLimit(100),
+		ydb.WithSessionPoolSizeLimit(300),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		ydb.WithTraceDriver(go_metrics.Driver(
-			metrics.DefaultRegistry,
-			go_metrics.WithDetails(
-				common.DriverConnEvents|
-					common.DriverDiscoveryEvents|
-					common.DriverClusterEvents|
-					common.DriverCredentialsEvents,
-			),
-			go_metrics.WithDelimiter(" ➠ "),
+		ydb.WithTraceDriver(sensors.Driver(
+			registry,
 		)),
-		ydb.WithTraceTable(go_metrics.Table(
-			metrics.DefaultRegistry,
-			go_metrics.WithDelimiter(" ➠ "),
-			go_metrics.WithDetails(
-				1|16|64|128|256,
-			),
+		ydb.WithTraceTable(sensors.Table(
+			registry,
 		)),
 		ydb.WithGrpcConnectionTTL(time.Second*5),
 	)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer db.Close(ctx)
 
 	log.SetOutput(&quet{})
 
-	concurrency := 200
+	concurrency := 300
 
 	wg := &sync.WaitGroup{}
 	wg.Add(concurrency + 1)
-	//go updateConnStats(wg, db)
-	//go updatePoolStats(wg, db.Table())
-	go httpServe(wg)
+	go httpServe(wg, port, registry)
+	if os.Getenv("YDB_PREPARE_BENCH_DATA") == "1" {
+		upsertData(ctx, db.Table(), db.Name(), "series")
+	}
+	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "app",
+		Name:      "in_flight",
+	}, []string{}).With(prometheus.Labels{})
+	registry.Register(inFlight)
+	rows := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "app",
+		Name:      "rows_per_request",
+	}, []string{"success"})
+	registry.Register(rows)
+	latency := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "app",
+		Name:      "latency_per_request",
+	}, []string{"success"})
+	registry.Register(latency)
 	for i := 0; i < concurrency; i++ {
 		go func() {
 			defer wg.Done()
 			for {
-				_ = tick(ctx, db.Table())
-				_ = selectSimple(ctx, db.Table(), connectParams.Database())
+				//time.Sleep(time.Duration(rand.Int63n(int64(time.Minute))))
+				inFlight.Add(1)
+				start := time.Now()
+				count, err := scanSelect(
+					ctx,
+					db.Table(),
+					db.Name(),
+					rand.Int63n(2500),
+				)
+				inFlight.Add(-1)
+				success := map[string]string{
+					"success": func() string {
+						if err == nil {
+							return "true"
+						}
+						return "false"
+					}(),
+				}
+				latency.With(success).Set(float64(time.Since(start)))
+				rows.With(success).Set(float64(count))
 			}
 		}()
 	}
 	wg.Wait()
 }
 
-func httpServe(wg *sync.WaitGroup) {
+func httpServe(wg *sync.WaitGroup, port int, registry *prometheus.Registry) {
 	defer wg.Done()
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	time.Sleep(time.Second)
+	http.Handle("/metrics", promhttp.InstrumentMetricHandler(
+		registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
+	))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+}
+
+func upsertData(ctx context.Context, c table.Client, prefix, tableName string) (err error) {
+	err = c.RetryIdempotent(ctx, func(ctx context.Context, s table.Session) (err error) {
+		return s.CreateTable(ctx, path.Join(prefix, "series"),
+			options.WithColumn("series_id", types.Optional(types.TypeUint64)),
+			options.WithColumn("title", types.Optional(types.TypeUTF8)),
+			options.WithColumn("series_info", types.Optional(types.TypeUTF8)),
+			options.WithColumn("release_date", types.Optional(types.TypeUint64)),
+			options.WithColumn("comment", types.Optional(types.TypeUTF8)),
+			options.WithPrimaryKeyColumn("series_id"),
+		)
+	})
+	if err != nil {
 		panic(err)
 	}
-}
-
-//func updatePoolStats(wg *sync.WaitGroup, sp *table.SessionPool) {
-//	defer wg.Done()
-//	for {
-//		time.Sleep(time.Second)
-//		stats := sp.Stats()
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/waitQ",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.WaitQ))
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/index",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.Index))
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/idle",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.Idle))
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/minSize",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.MinSize))
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/maxSize",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.MaxSize))
-//		metrics.DefaultRegistry.GetOrRegister(
-//			"pool/createInProgress",
-//			metrics.NewGauge(),
-//		).(metrics.Gauge).Update(int64(stats.CreateInProgress))
-//	}
-//}
-//
-//func updateConnStats(wg *sync.WaitGroup, cluster ydb.Cluster) {
-//	defer wg.Done()
-//	for {
-//		time.Sleep(time.Second)
-//
-//		actual := make(map[ydb.Endpoint]ydb.ConnState)
-//
-//		cluster.Stats(func(endpoint ydb.Endpoint, stats ydb.ConnStats) {
-//			actual[endpoint] = stats.State
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("cluster/%s:%v/status", endpoint.Addr, endpoint.Port),
-//				metrics.NewGauge(),
-//			).(metrics.Gauge).Update(int64(stats.State))
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("cluster/%s:%v/OpPerMinute", endpoint.Addr, endpoint.Port),
-//				metrics.NewGauge(),
-//			).(metrics.Gauge).Update(
-//				int64(stats.OpPerMinute),
-//			)
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("cluster/%s:%v/AvgOpTime", endpoint.Addr, endpoint.Port),
-//				metrics.NewGaugeFloat64(),
-//			).(metrics.GaugeFloat64).Update(
-//				float64(stats.AvgOpTime) / float64(time.Millisecond),
-//			)
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("cluster/%s:%v/ErrPerMinute", endpoint.Addr, endpoint.Port),
-//				metrics.NewGauge(),
-//			).(metrics.Gauge).Update(
-//				int64(stats.ErrPerMinute),
-//			)
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("cluster/%s:%v/OpFailed", endpoint.Addr, endpoint.Port),
-//				metrics.NewGauge(),
-//			).(metrics.Gauge).Update(
-//				int64(stats.OpFailed),
-//			)
-//		})
-//
-//		endpointsMtx.Lock()
-//		for endpoint := range endpoints {
-//			if _, ok := actual[endpoint]; !ok {
-//				metrics.DefaultRegistry.GetOrRegister(
-//					fmt.Sprintf("cluster/%s:%v/OpPerMinute", endpoint.Addr, endpoint.Port),
-//					metrics.NewGauge(),
-//				).(metrics.Gauge).Update(0)
-//				metrics.DefaultRegistry.GetOrRegister(
-//					fmt.Sprintf("cluster/%s:%v/AvgOpTime", endpoint.Addr, endpoint.Port),
-//					metrics.NewGaugeFloat64(),
-//				).(metrics.GaugeFloat64).Update(0)
-//				metrics.DefaultRegistry.GetOrRegister(
-//					fmt.Sprintf("cluster/%s:%v/ErrPerMinute", endpoint.Addr, endpoint.Port),
-//					metrics.NewGauge(),
-//				).(metrics.Gauge).Update(0)
-//				metrics.DefaultRegistry.GetOrRegister(
-//					fmt.Sprintf("cluster/%s:%v/OpFailed", endpoint.Addr, endpoint.Port),
-//					metrics.NewGauge(),
-//				).(metrics.Gauge).Update(0)
-//				endpoints[endpoint] = ydb.ConnStateUnknown
-//			}
-//		}
-//		for e, state := range actual {
-//			endpoints[e] = state
-//		}
-//		for s := ydb.ConnOffline; s <= ydb.ConnOnline; s++ {
-//			metrics.DefaultRegistry.GetOrRegister(
-//				fmt.Sprintf("endpoints/%s", s.String()),
-//				metrics.NewGauge(),
-//			).(metrics.Gauge).Update(func() (count int64) {
-//				for _, state := range endpoints {
-//					if state == s {
-//						count++
-//					}
-//				}
-//				return count
-//			}())
-//		}
-//		endpointsMtx.Unlock()
-//	}
-//}
-
-func selectSimple(ctx context.Context, c table.Client, prefix string) error {
-	query := fmt.Sprintf(`
-			PRAGMA TablePathPrefix("%s");
-			DECLARE $seriesID AS Uint64;
-			$format = DateTime::Format("%%Y-%%m-%%d");
-			SELECT
-				series_id,
-				title,
-				$format(DateTime::FromSeconds(CAST(DateTime::ToSeconds(DateTime::IntervalFromDays(CAST(release_date AS Int16))) AS Uint32))) AS release_date
-			FROM
-				series
-			WHERE
-				series_id = $seriesID;
-		`, prefix)
-	readTx := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
-	var res resultset.Result
-	err := c.RetryIdempotent(
-		ctx,
-		func(ctx context.Context, s table.Session) (err error) {
-			stmt, err := s.Prepare(ctx, query)
+	rowsLen := 25000
+	rows := make([]types.Value, 0)
+	for i := 0; i < rowsLen; i++ {
+		if i%100000 == 0 && len(rows) > 0 {
+			err = c.RetryIdempotent(ctx, func(ctx context.Context, session table.Session) (err error) {
+				return session.BulkUpsert(
+					ctx,
+					prefix+"/"+tableName,
+					types.ListValue(rows...),
+				)
+			})
 			if err != nil {
-				return
+				panic(err)
 			}
-			_, res, err = stmt.Execute(ctx, readTx,
-				table.NewQueryParameters(
-					table.ValueParam("$seriesID", types.Uint64Value(1)),
-				),
-				options.WithQueryCachePolicy(
-					options.WithQueryCachePolicyKeepInCache(),
-				),
-				options.WithCollectStatsModeBasic(),
-			)
-			return
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	var (
-		id    *uint64
-		title *string
-		date  *[]byte
-	)
-
-	log.Printf("> select_simple_transaction:\n")
-	for res.NextResultSet(ctx, "series_id", "title", "release_date") {
-		for res.NextRow() {
-			err = res.Scan(&id, &title, &date)
-			if err != nil {
-				return err
-			}
-			log.Printf(
-				"  > %d %s %s\n",
-				*id, *title, *date,
-			)
+			rows = rows[:0]
 		}
+		rows = append(rows, types.StructValue(
+			types.StructFieldValue("series_id", types.Uint64Value(uint64(i+3))),
+			types.StructFieldValue("title", types.UTF8Value(fmt.Sprintf("series No. %d title", i+3))),
+			types.StructFieldValue("series_info", types.UTF8Value(fmt.Sprintf("series No. %d info", i+3))),
+			types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Now().Sub(time.Unix(0, 0))/time.Hour/24))),
+			types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+3))),
+		))
 	}
-	return res.Err()
+	return nil
 }
 
-func tick(ctx context.Context, tbl table.Client) (err error) {
-	//now := time.Now()
-	query := `SELECT 1, "1", 1+1;`
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*200)
-	defer cancel()
-	txc := table.TxControl(table.BeginTx(table.WithOnlineReadOnly(table.WithInconsistentReads())), table.CommitTx())
-	err = tbl.RetryIdempotent(
+func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
+	query := fmt.Sprintf(`
+		PRAGMA TablePathPrefix("%s");
+		$format = DateTime::Format("%%Y-%%m-%%d");
+		SELECT
+			series_id,
+			title,
+			$format(DateTime::FromSeconds(CAST(DateTime::ToSeconds(DateTime::IntervalFromDays(CAST(release_date AS Int16))) AS Uint32))) AS release_date
+		FROM series LIMIT %d;`,
+		prefix,
+		limit,
+	)
+	err = c.RetryIdempotent(
 		ctx,
-		func(ctx context.Context, session table.Session) error {
-			_, result, err := session.Execute(
+		func(ctx context.Context, s table.Session) error {
+			res, err := s.StreamExecuteScanQuery(
 				ctx,
-				txc,
 				query,
 				table.NewQueryParameters(),
-				options.WithQueryCachePolicy(
-					options.WithQueryCachePolicyKeepInCache(),
-				),
 			)
 			if err != nil {
 				return err
 			}
-			defer func() {
-				_ = result.Close()
-			}()
-			return nil
+			var (
+				id    *uint64
+				title *string
+				date  *[]byte
+			)
+			log.Printf("> select_simple_transaction:\n")
+			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
+				for res.NextRow() {
+					count++
+					err = res.Scan(&id, &title, &date)
+					if err != nil {
+						return err
+					}
+					log.Printf(
+						"  > %d %s %s\n",
+						*id, *title, *date,
+					)
+				}
+			}
+			return res.Err()
 		},
 	)
-	//if err == nil {
-	//	timeout := metrics.DefaultRegistry.GetOrRegister(
-	//		"tick/timeout",
-	//		metrics.NewGaugeFloat64(),
-	//	).(metrics.GaugeFloat64)
-	//	timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
-	//	metrics.DefaultRegistry.GetOrRegister(
-	//		"tick/count",
-	//		metrics.NewCounter(),
-	//	).(metrics.Counter).Inc(1)
-	//} else {
-	//	timeout := metrics.DefaultRegistry.GetOrRegister(
-	//		"tick/errors/timeout",
-	//		metrics.NewGaugeFloat64(),
-	//	).(metrics.GaugeFloat64)
-	//	timeout.Update(timeout.Value()*0.9 + 0.1*float64(time.Since(now).Milliseconds()))
-	//	metrics.DefaultRegistry.GetOrRegister(
-	//		"tick/errors",
-	//		metrics.NewCounter(),
-	//	).(metrics.Counter).Inc(1)
-	//}
-	return err
+	return count, err
 }

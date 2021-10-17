@@ -1,28 +1,23 @@
-package metrics_local
+package sensors
 
 import (
-	"github.com/rcrowley/go-metrics"
-	common "github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	sensors "github.com/ydb-platform/ydb-go-sdk-sensors"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 // Table makes table.ClientTrace with solomon metrics publishing
-func Table(registry metrics.Registry, opts ...option) trace.Table {
+func Table(registry prometheus.Registerer, opts ...option) trace.Table {
 	c := &config{
 		registry:  registry,
-		delimiter: "/",
+		namespace: "ydb_go_sdk",
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	if c.details == 0 {
-		c.details =
-			common.TableSessionEvents |
-				common.TableQueryEvents |
-				common.TableStreamEvents |
-				common.TableTransactionEvents |
-				common.TablePoolEvents
+		c.details = ^sensors.Details(0)
 	}
-	return common.Table(c)
+	return sensors.Table(c)
 }
