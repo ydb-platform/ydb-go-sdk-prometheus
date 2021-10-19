@@ -4,11 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	sensors "github.com/ydb-platform/ydb-go-sdk-prometheus"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
-	"golang.org/x/sync/semaphore"
 	"log"
 	"math/rand"
 	"net/http"
@@ -18,10 +13,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
+
+	sensors "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
 var (
@@ -182,15 +183,15 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 		Name:      "upsert_count",
 	}, []string{"success"})
 	registry.Register(counter)
-	sema := semaphore.NewWeighted(10)
+	sema := make(chan struct{}, 10)
 	for shift := 0; shift < rowsLen; shift += batchSize {
 		wg.Add(1)
-		if err := sema.Acquire(ctx, 1); err != nil {
-			panic(err)
-		}
+		sema <- struct{}{}
 		go func(prefix, tableName string, shift int) {
-			defer wg.Done()
-			defer sema.Release(1)
+			defer func() {
+				<-sema
+				wg.Done()
+			}()
 			rows := make([]types.Value, 0, batchSize)
 			for i := 0; i < batchSize; i++ {
 				rows = append(rows, types.StructValue(
