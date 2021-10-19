@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	sensors "github.com/ydb-platform/ydb-go-sdk-prometheus"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
+	"golang.org/x/sync/semaphore"
 	"log"
 	"math/rand"
 	"net/http"
@@ -72,6 +73,7 @@ func main() {
 		ctx,
 		ydb.WithConnectionString(connection),
 		ydb.WithDialTimeout(5*time.Second),
+		//ydb.WithDiscoveryInterval(5 * time.Second),
 		ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
 		creds,
 		ydb.WithBalancingConfig(config.BalancerConfig{
@@ -87,7 +89,7 @@ func main() {
 		ydb.WithTraceTable(sensors.Table(
 			registry,
 		)),
-		ydb.WithGrpcConnectionTTL(time.Second*5),
+		ydb.WithGrpcConnectionTTL(5*time.Second),
 	)
 	if err != nil {
 		panic(err)
@@ -102,7 +104,7 @@ func main() {
 	wg.Add(concurrency + 1)
 	go httpServe(wg, port, registry)
 	if os.Getenv("YDB_PREPARE_BENCH_DATA") == "1" {
-		upsertData(ctx, db.Table(), db.Name(), "series")
+		upsertData(ctx, db.Table(), db.Name(), "series", registry)
 	}
 	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
@@ -123,14 +125,14 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for {
-				//time.Sleep(time.Duration(rand.Int63n(int64(time.Minute))))
+				time.Sleep(time.Duration(rand.Int63n(int64(time.Second))))
 				inFlight.Add(1)
 				start := time.Now()
 				count, err := scanSelect(
 					ctx,
 					db.Table(),
 					db.Name(),
-					rand.Int63n(2500),
+					rand.Int63n(25000000),
 				)
 				inFlight.Add(-1)
 				success := map[string]string{
@@ -158,9 +160,9 @@ func httpServe(wg *sync.WaitGroup, port int, registry *prometheus.Registry) {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 
-func upsertData(ctx context.Context, c table.Client, prefix, tableName string) (err error) {
+func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry) (err error) {
 	err = c.RetryIdempotent(ctx, func(ctx context.Context, s table.Session) (err error) {
-		return s.CreateTable(ctx, path.Join(prefix, "series"),
+		return s.CreateTable(ctx, path.Join(prefix, tableName),
 			options.WithColumn("series_id", types.Optional(types.TypeUint64)),
 			options.WithColumn("title", types.Optional(types.TypeUTF8)),
 			options.WithColumn("series_info", types.Optional(types.TypeUTF8)),
@@ -172,30 +174,52 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string) (
 	if err != nil {
 		panic(err)
 	}
-	rowsLen := 25000
-	rows := make([]types.Value, 0)
-	for i := 0; i < rowsLen; i++ {
-		if i%100000 == 0 && len(rows) > 0 {
+	rowsLen := 25000000
+	batchSize := 1000
+	wg := sync.WaitGroup{}
+	counter := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "app",
+		Name:      "upsert_count",
+	}, []string{"success"})
+	registry.Register(counter)
+	sema := semaphore.NewWeighted(10)
+	for shift := 0; shift < rowsLen; shift += batchSize {
+		wg.Add(1)
+		if err := sema.Acquire(ctx, 1); err != nil {
+			panic(err)
+		}
+		go func(prefix, tableName string, shift int) {
+			defer wg.Done()
+			defer sema.Release(1)
+			rows := make([]types.Value, 0, batchSize)
+			for i := 0; i < batchSize; i++ {
+				rows = append(rows, types.StructValue(
+					types.StructFieldValue("series_id", types.Uint64Value(uint64(i+shift+3))),
+					types.StructFieldValue("title", types.UTF8Value(fmt.Sprintf("series No. %d title", i+shift+3))),
+					types.StructFieldValue("series_info", types.UTF8Value(fmt.Sprintf("series No. %d info", i+shift+3))),
+					types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Now().Sub(time.Unix(0, 0))/time.Hour/24))),
+					types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+shift+3))),
+				))
+			}
 			err = c.RetryIdempotent(ctx, func(ctx context.Context, session table.Session) (err error) {
 				return session.BulkUpsert(
 					ctx,
-					prefix+"/"+tableName,
+					path.Join(prefix, tableName),
 					types.ListValue(rows...),
 				)
 			})
-			if err != nil {
-				panic(err)
+			success := map[string]string{
+				"success": func() string {
+					if err == nil {
+						return "true"
+					}
+					return "false"
+				}(),
 			}
-			rows = rows[:0]
-		}
-		rows = append(rows, types.StructValue(
-			types.StructFieldValue("series_id", types.Uint64Value(uint64(i+3))),
-			types.StructFieldValue("title", types.UTF8Value(fmt.Sprintf("series No. %d title", i+3))),
-			types.StructFieldValue("series_info", types.UTF8Value(fmt.Sprintf("series No. %d info", i+3))),
-			types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Now().Sub(time.Unix(0, 0))/time.Hour/24))),
-			types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+3))),
-		))
+			counter.With(success).Add(float64(batchSize) * 100. / float64(rowsLen))
+		}(prefix, tableName, shift)
 	}
+	wg.Wait()
 	return nil
 }
 
