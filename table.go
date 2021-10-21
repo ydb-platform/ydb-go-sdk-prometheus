@@ -1,4 +1,4 @@
-package sensors
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -11,6 +11,7 @@ func Table(registry prometheus.Registerer, opts ...option) trace.Table {
 	c := &config{
 		registry:  registry,
 		namespace: "ydb_go_sdk",
+		separator: "_",
 	}
 	for _, o := range opts {
 		o(c)

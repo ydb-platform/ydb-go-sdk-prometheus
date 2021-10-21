@@ -10,6 +10,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"path"
+	"strconv"
 	"sync"
 	"time"
 
@@ -22,7 +23,7 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
-	sensors "github.com/ydb-platform/ydb-go-sdk-prometheus"
+	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
 var (
@@ -74,54 +75,60 @@ func main() {
 		ctx,
 		ydb.WithConnectionString(connection),
 		ydb.WithDialTimeout(5*time.Second),
+		ydb.WithBalancingConfig(config.BalancerConfig{
+			Algorithm:   config.BalancingAlgorithmRandomChoice,
+			PreferLocal: false,
+		}),
 		//ydb.WithDiscoveryInterval(5 * time.Second),
 		ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
 		creds,
-		ydb.WithBalancingConfig(config.BalancerConfig{
-			Algorithm:       config.BalancingAlgorithmP2C,
-			PreferLocal:     false,
-			OpTimeThreshold: time.Second,
-		}),
 		ydb.WithSessionPoolSizeLimit(300),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		ydb.WithTraceDriver(sensors.Driver(
+		ydb.WithTraceDriver(metrics.Driver(
 			registry,
+			metrics.WithSeparator("/"),
 		)),
-		ydb.WithTraceTable(sensors.Table(
+		ydb.WithTraceTable(metrics.Table(
 			registry,
+			metrics.WithSeparator("/"),
 		)),
 		ydb.WithGrpcConnectionTTL(5*time.Second),
 	)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close(ctx)
+	defer func() {
+		_ = db.Close(ctx)
+	}()
 
 	log.SetOutput(&quet{})
 
-	concurrency := 300
-
 	wg := &sync.WaitGroup{}
-	wg.Add(concurrency + 1)
+	wg.Add(1)
 	go httpServe(wg, port, registry)
-	if os.Getenv("YDB_PREPARE_BENCH_DATA") == "1" {
-		upsertData(ctx, db.Table(), db.Name(), "series", registry)
+
+	if concurrency, err := strconv.Atoi(os.Getenv("YDB_PREPARE_BENCH_DATA")); err == nil && concurrency > 0 {
+		_ = upsertData(ctx, db.Table(), db.Name(), "series", registry, concurrency)
 	}
+
+	concurrency := 300
+	wg.Add(concurrency)
+
 	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
 		Name:      "in_flight",
 	}, []string{}).With(prometheus.Labels{})
-	registry.Register(inFlight)
+	_ = registry.Register(inFlight)
 	rows := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
 		Name:      "rows_per_request",
 	}, []string{"success"})
-	registry.Register(rows)
+	_ = registry.Register(rows)
 	latency := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
 		Name:      "latency_per_request",
 	}, []string{"success"})
-	registry.Register(latency)
+	_ = registry.Register(latency)
 	for i := 0; i < concurrency; i++ {
 		go func() {
 			defer wg.Done()
@@ -133,7 +140,7 @@ func main() {
 					ctx,
 					db.Table(),
 					db.Name(),
-					rand.Int63n(25000000),
+					rand.Int63n(2500),
 				)
 				inFlight.Add(-1)
 				success := map[string]string{
@@ -161,7 +168,7 @@ func httpServe(wg *sync.WaitGroup, port int, registry *prometheus.Registry) {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 
-func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry) (err error) {
+func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int) (err error) {
 	err = c.RetryIdempotent(ctx, func(ctx context.Context, s table.Session) (err error) {
 		return s.CreateTable(ctx, path.Join(prefix, tableName),
 			options.WithColumn("series_id", types.Optional(types.TypeUint64)),
@@ -182,8 +189,8 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 		Namespace: "app",
 		Name:      "upsert_count",
 	}, []string{"success"})
-	registry.Register(counter)
-	sema := make(chan struct{}, 10)
+	_ = registry.Register(counter)
+	sema := make(chan struct{}, concurrency)
 	for shift := 0; shift < rowsLen; shift += batchSize {
 		wg.Add(1)
 		sema <- struct{}{}

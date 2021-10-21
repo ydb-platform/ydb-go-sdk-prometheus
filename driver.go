@@ -1,8 +1,8 @@
-package sensors
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/ydb-platform/ydb-go-sdk-sensors"
+	"github.com/ydb-platform/ydb-go-sdk-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
@@ -11,12 +11,13 @@ func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
 	c := &config{
 		registry:  registry,
 		namespace: "ydb_go_sdk",
+		separator: "_",
 	}
 	for _, o := range opts {
 		o(c)
 	}
 	if c.details == 0 {
-		c.details = ^sensors.Details(0)
+		c.details = ^metrics.Details(0)
 	}
-	return sensors.Driver(c)
+	return metrics.Driver(c)
 }

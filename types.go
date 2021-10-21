@@ -1,4 +1,4 @@
-package sensors
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -9,6 +9,7 @@ import (
 
 type config struct {
 	details   sensors.Details
+	separator string
 	registry  prometheus.Registerer
 	namespace string
 
@@ -16,21 +17,21 @@ type config struct {
 	gauges map[gaugeOpts]*gaugeVec
 }
 
-func join(a, b string) string {
+func (c *config) join(a, b string) string {
 	if a == "" {
 		return b
 	}
 	if b == "" {
 		return ""
 	}
-	return strings.Join([]string{a, b}, "_")
+	return strings.Join([]string{a, b}, c.separator)
 }
 
 func (c *config) WithSystem(subsystem string) sensors.Config {
 	return &config{
 		details:   c.details,
 		registry:  c.registry,
-		namespace: join(c.namespace, subsystem),
+		namespace: c.join(c.namespace, subsystem),
 		gauges:    make(map[gaugeOpts]*gaugeVec),
 	}
 }
@@ -102,5 +103,11 @@ func WithNamespace(namespace string) option {
 func WithDetails(details sensors.Details) option {
 	return func(c *config) {
 		c.details = details
+	}
+}
+
+func WithSeparator(separator string) option {
+	return func(c *config) {
+		c.separator = separator
 	}
 }
