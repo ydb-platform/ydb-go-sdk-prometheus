@@ -111,7 +111,13 @@ func main() {
 		_ = upsertData(ctx, db.Table(), db.Name(), "series", registry, concurrency)
 	}
 
-	concurrency := 300
+	concurrency := func() int {
+		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil {
+			return concurrency
+		}
+		return 300
+	}()
+
 	wg.Add(concurrency)
 
 	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
