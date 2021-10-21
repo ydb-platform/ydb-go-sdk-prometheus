@@ -10,8 +10,8 @@ import (
 func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
 	c := &config{
 		registry:  registry,
-		namespace: "ydb_go_sdk",
-		separator: "_",
+		namespace: defaultNamespace,
+		separator: defaultSeparator,
 	}
 	for _, o := range opts {
 		o(c)

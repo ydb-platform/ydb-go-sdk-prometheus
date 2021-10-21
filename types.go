@@ -2,13 +2,18 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	sensors "github.com/ydb-platform/ydb-go-sdk-sensors"
+	"github.com/ydb-platform/ydb-go-sdk-metrics"
 	"strings"
 	"sync"
 )
 
+const (
+	defaultNamespace = "ydb_go_sdk"
+	defaultSeparator = "_"
+)
+
 type config struct {
-	details   sensors.Details
+	details   metrics.Details
 	separator string
 	registry  prometheus.Registerer
 	namespace string
@@ -27,8 +32,9 @@ func (c *config) join(a, b string) string {
 	return strings.Join([]string{a, b}, c.separator)
 }
 
-func (c *config) WithSystem(subsystem string) sensors.Config {
+func (c *config) WithSystem(subsystem string) metrics.Config {
 	return &config{
+		separator: c.separator,
 		details:   c.details,
 		registry:  c.registry,
 		namespace: c.join(c.namespace, subsystem),
@@ -56,7 +62,7 @@ type gaugeVec struct {
 	g *prometheus.GaugeVec
 }
 
-func (g *gaugeVec) With(labels ...sensors.Label) sensors.Gauge {
+func (g *gaugeVec) With(labels ...metrics.Label) metrics.Gauge {
 	gauge, err := g.g.GetMetricWith(func() prometheus.Labels {
 		kv := make(prometheus.Labels, len(labels))
 		for _, label := range labels {
@@ -70,7 +76,7 @@ func (g *gaugeVec) With(labels ...sensors.Label) sensors.Gauge {
 	return gauge
 }
 
-func (c *config) GaugeVec(name string, description string, labelNames ...string) sensors.GaugeVec {
+func (c *config) GaugeVec(name string, description string, labelNames ...string) metrics.GaugeVec {
 	opts := prometheus.GaugeOpts{
 		Namespace: c.namespace,
 		Name:      name,
@@ -88,7 +94,7 @@ func (c *config) GaugeVec(name string, description string, labelNames ...string)
 	return g
 }
 
-func (c *config) Details() sensors.Details {
+func (c *config) Details() metrics.Details {
 	return c.details
 }
 
@@ -100,7 +106,7 @@ func WithNamespace(namespace string) option {
 	}
 }
 
-func WithDetails(details sensors.Details) option {
+func WithDetails(details metrics.Details) option {
 	return func(c *config) {
 		c.details = details
 	}

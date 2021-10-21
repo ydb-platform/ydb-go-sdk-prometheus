@@ -86,11 +86,11 @@ func main() {
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
 		ydb.WithTraceDriver(metrics.Driver(
 			registry,
-			metrics.WithSeparator("/"),
+			metrics.WithSeparator("_"),
 		)),
 		ydb.WithTraceTable(metrics.Table(
 			registry,
-			metrics.WithSeparator("/"),
+			metrics.WithSeparator("_"),
 		)),
 		ydb.WithGrpcConnectionTTL(5*time.Second),
 	)
