@@ -107,8 +107,17 @@ func main() {
 	wg.Add(1)
 	go httpServe(wg, port, registry)
 
+	errs := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "app",
+		Name:      "errors",
+	}, []string{"error"})
+	_ = registry.Register(errs)
+	errs.With(map[string]string{
+		"error": "",
+	}).Add(0)
+
 	if concurrency, err := strconv.Atoi(os.Getenv("YDB_PREPARE_BENCH_DATA")); err == nil && concurrency > 0 {
-		_ = upsertData(ctx, db.Table(), db.Name(), "series", registry, concurrency)
+		_ = upsertData(ctx, db.Table(), db.Name(), "series", registry, concurrency, errs)
 	}
 
 	concurrency := func() int {
@@ -146,7 +155,7 @@ func main() {
 					ctx,
 					db.Table(),
 					db.Name(),
-					rand.Int63n(2500),
+					rand.Int63n(25000),
 				)
 				inFlight.Add(-1)
 				success := map[string]string{
@@ -159,6 +168,11 @@ func main() {
 				}
 				latency.With(success).Set(float64(time.Since(start)))
 				rows.With(success).Set(float64(count))
+				if err != nil {
+					errs.With(map[string]string{
+						"error": err.Error(),
+					}).Add(1)
+				}
 			}
 		}()
 	}
@@ -174,19 +188,24 @@ func httpServe(wg *sync.WaitGroup, port int, registry *prometheus.Registry) {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 
-func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int) (err error) {
-	err = c.RetryIdempotent(ctx, func(ctx context.Context, s table.Session) (err error) {
-		return s.CreateTable(ctx, path.Join(prefix, tableName),
-			options.WithColumn("series_id", types.Optional(types.TypeUint64)),
-			options.WithColumn("title", types.Optional(types.TypeUTF8)),
-			options.WithColumn("series_info", types.Optional(types.TypeUTF8)),
-			options.WithColumn("release_date", types.Optional(types.TypeUint64)),
-			options.WithColumn("comment", types.Optional(types.TypeUTF8)),
-			options.WithPrimaryKeyColumn("series_id"),
-		)
-	})
+func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
+	err = c.Do(
+		ctx,
+		func(ctx context.Context, s table.Session) (err error) {
+			return s.CreateTable(ctx, path.Join(prefix, tableName),
+				options.WithColumn("series_id", types.Optional(types.TypeUint64)),
+				options.WithColumn("title", types.Optional(types.TypeUTF8)),
+				options.WithColumn("series_info", types.Optional(types.TypeUTF8)),
+				options.WithColumn("release_date", types.Optional(types.TypeUint64)),
+				options.WithColumn("comment", types.Optional(types.TypeUTF8)),
+				options.WithPrimaryKeyColumn("series_id"),
+			)
+		},
+	)
 	if err != nil {
-		panic(err)
+		errs.With(map[string]string{
+			"error": err.Error(),
+		}).Add(1)
 	}
 	rowsLen := 25000000
 	batchSize := 1000
@@ -211,17 +230,25 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 					types.StructFieldValue("series_id", types.Uint64Value(uint64(i+shift+3))),
 					types.StructFieldValue("title", types.UTF8Value(fmt.Sprintf("series No. %d title", i+shift+3))),
 					types.StructFieldValue("series_info", types.UTF8Value(fmt.Sprintf("series No. %d info", i+shift+3))),
-					types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Now().Sub(time.Unix(0, 0))/time.Hour/24))),
+					types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Since(time.Unix(0, 0))/time.Hour/24))),
 					types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+shift+3))),
 				))
 			}
-			err = c.RetryIdempotent(ctx, func(ctx context.Context, session table.Session) (err error) {
-				return session.BulkUpsert(
-					ctx,
-					path.Join(prefix, tableName),
-					types.ListValue(rows...),
-				)
-			})
+			err = c.Do(
+				ctx,
+				func(ctx context.Context, session table.Session) (err error) {
+					return session.BulkUpsert(
+						ctx,
+						path.Join(prefix, tableName),
+						types.ListValue(rows...),
+					)
+				},
+			)
+			if err != nil {
+				errs.With(map[string]string{
+					"error": err.Error(),
+				}).Add(1)
+			}
 			success := map[string]string{
 				"success": func() string {
 					if err == nil {
@@ -249,7 +276,7 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 		prefix,
 		limit,
 	)
-	err = c.RetryIdempotent(
+	err = c.Do(
 		ctx,
 		func(ctx context.Context, s table.Session) error {
 			res, err := s.StreamExecuteScanQuery(

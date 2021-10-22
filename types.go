@@ -89,7 +89,9 @@ func (c *config) GaugeVec(name string, description string, labelNames ...string)
 		return g
 	}
 	g := &gaugeVec{g: prometheus.NewGaugeVec(opts, labelNames)}
-	c.registry.Register(g.g)
+	if err := c.registry.Register(g.g); err != nil {
+		panic(err)
+	}
 	c.gauges[gaugeOpts] = g
 	return g
 }

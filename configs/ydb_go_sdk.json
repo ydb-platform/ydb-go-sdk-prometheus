@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1634850356637,
+  "iteration": 1634901044676,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -39,201 +39,8 @@
       },
       "id": 77,
       "panels": [],
-      "title": "main",
+      "title": "Summary",
       "type": "row"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 4,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 1
-      },
-      "hiddenSeries": false,
-      "id": 92,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": false,
-          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$host\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$host\"}) by (address))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{address}}",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Connections on-line",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [
-        {
-          "id": "groupBy",
-          "options": {}
-        }
-      ],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:163",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:164",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 19,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 1
-      },
-      "id": 91,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "(sum(ydb_go_sdk_driver_core_state_calls{success=\"true\",address=~\"$host\",state=~\"(online|offline|banned)\"}) by (state))-(sum(ydb_go_sdk_driver_core_state_calls{success=\"wip\",address=~\"$host\",state=~\"(online|offline|banned)\"}) by (state))",
-          "interval": "",
-          "legendFormat": "{{state}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Connections state",
-      "type": "timeseries"
     },
     {
       "aliasColors": {},
@@ -252,7 +59,7 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 16,
+        "x": 0,
         "y": 1
       },
       "hiddenSeries": false,
@@ -353,101 +160,6 @@
             "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 27,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 9
-      },
-      "id": 93,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "(sum(ydb_go_sdk_driver_core_take_calls{success=\"true\",address=~\"$host\"}) by (address))-(sum(ydb_go_sdk_driver_core_release_calls{success=\"true\",address=~\"$host\"}) by (address))",
-          "interval": "",
-          "legendFormat": "{{address}}",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{address}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Connections usage",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
             "fillOpacity": 23,
             "gradientMode": "hue",
             "hideFrom": {
@@ -496,7 +208,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 9
+        "y": 1
       },
       "id": 83,
       "options": {
@@ -582,7 +294,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 9
+        "y": 1
       },
       "id": 114,
       "options": {
@@ -633,13 +345,973 @@
       "type": "timeseries"
     },
     {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 19,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "id": 91,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(ydb_go_sdk_driver_core_state_calls{success=\"true\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))-(sum(ydb_go_sdk_driver_core_state_calls{success=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))",
+          "interval": "",
+          "legendFormat": "{{state}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Connections state",
+      "type": "timeseries"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "id": 173,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(rate(${prefix}_driver_core_invoke_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{method}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Invoke Requests",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "id": 174,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(rate(${prefix}_driver_core_stream_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{method}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Stream Requests",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 4,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 92,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": false,
+          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$endpoint\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Connections on-line",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {}
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 170,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_driver_core_invoke_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Invoke Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "ns",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 171,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_driver_core_stream_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Stream Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "ns",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 27,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 25
+      },
+      "id": 93,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(ydb_go_sdk_driver_core_take_calls{success=\"true\",address=~\"$endpoint\"}) by (address))-(sum(ydb_go_sdk_driver_core_release_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Connections usage",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 25
+      },
+      "hiddenSeries": false,
+      "id": 169,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": false,
+          "expr": "sum(rate(${prefix}_driver_core_invoke_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{error}} [{{errCode}}]",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Invoke Errors [by type]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 25
+      },
+      "hiddenSeries": false,
+      "id": 172,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": false,
+          "expr": "sum(rate(${prefix}_driver_core_stream_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{error}} [{{errCode}}]",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Stream Errors [by type]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "collapsed": true,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 33
       },
       "id": 49,
       "panels": [
@@ -671,7 +1343,7 @@
             "h": 5,
             "w": 8,
             "x": 0,
-            "y": 10
+            "y": 34
           },
           "id": 2,
           "options": {
@@ -733,7 +1405,7 @@
             "h": 5,
             "w": 9,
             "x": 8,
-            "y": 10
+            "y": 34
           },
           "id": 3,
           "options": {
@@ -791,7 +1463,7 @@
             "h": 5,
             "w": 7,
             "x": 17,
-            "y": 10
+            "y": 34
           },
           "id": 23,
           "options": {
@@ -835,7 +1507,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 34
       },
       "id": 47,
       "panels": [
@@ -857,7 +1529,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 19
+            "y": 35
           },
           "hiddenSeries": false,
           "id": 24,
@@ -889,7 +1561,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$host\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$host\"}) by (address))",
+              "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$endpoint\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -964,7 +1636,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 19
+            "y": 35
           },
           "hiddenSeries": false,
           "id": 28,
@@ -995,7 +1667,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_value{address=~\"$host\"}[1s])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_value{address=~\"$endpoint\"}[1s])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -1076,7 +1748,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 19
+            "y": 35
           },
           "hiddenSeries": false,
           "id": 50,
@@ -1107,7 +1779,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_value{address=~\"$host\"}[1s])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_value{address=~\"$endpoint\"}[1s])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -1188,7 +1860,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 27
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 51,
@@ -1219,7 +1891,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{address=~\"$host\"}[15s])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{address=~\"$host\"}[15s])) by (address))",
+              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[15s])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[15s])) by (address))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1231,7 +1903,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Dial errors [by host]",
+          "title": "Dial errors [by endpoint]",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1294,7 +1966,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 27
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 52,
@@ -1325,7 +1997,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$host\"}[15s])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[15s])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1337,7 +2009,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Read errors [by host]",
+          "title": "Read errors [by endpoint]",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1400,7 +2072,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 27
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 53,
@@ -1431,7 +2103,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$host\"}[15s])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[15s])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1443,7 +2115,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Write errors [by host]",
+          "title": "Write errors [by endpoint]",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1506,7 +2178,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 35
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 54,
@@ -1537,7 +2209,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_dial_errors{address=~\"$host\"}[15s])) by (error, errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[15s])) by (error, errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1546,7 +2218,7 @@
             },
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_close_errors{address=~\"$host\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1621,7 +2293,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 35
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 55,
@@ -1652,7 +2324,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$host\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1727,7 +2399,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 35
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 56,
@@ -1758,7 +2430,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$host\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1826,7 +2498,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 35
       },
       "id": 58,
       "panels": [
@@ -1848,7 +2520,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 20
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 59,
@@ -1880,7 +2552,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$host\",success=~\"(true|false)\"}[$__rate_interval])) by (address))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (address))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -1961,7 +2633,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 20
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 84,
@@ -1992,7 +2664,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_address}_latency{address=~\"$host\",success=~\"(true|false)\"}) by (address))",
+              "expr": "(sum(${prefix}_${metrics_with_address}_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "",
@@ -2073,7 +2745,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 20
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 90,
@@ -2104,7 +2776,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$host\"}[$__rate_interval])) by (address)",
+              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2185,7 +2857,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 28
+            "y": 44
           },
           "hiddenSeries": false,
           "id": 140,
@@ -2216,7 +2888,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$host\",success=~\"(true|false)\"}[$__rate_interval])) by (method,success))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method,success))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{method}}, success={{success}}",
@@ -2297,7 +2969,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 28
+            "y": 44
           },
           "hiddenSeries": false,
           "id": 154,
@@ -2328,7 +3000,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_address}_value{address=~\"$host\",success=~\"(true|false)\"}) by (address))",
+              "expr": "(sum(${prefix}_${metrics_with_address}_value{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "",
@@ -2409,7 +3081,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 28
+            "y": 44
           },
           "hiddenSeries": false,
           "id": 70,
@@ -2441,7 +3113,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$host\"}[$__rate_interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
@@ -2516,7 +3188,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 37
       },
       "id": 86,
       "panels": [
@@ -2538,7 +3210,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 57
+            "y": 38
           },
           "hiddenSeries": false,
           "id": 87,
@@ -2569,7 +3241,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}[$rate_interval])) by (nodeID))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}[$interval])) by (nodeID))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{nodeID}}",
@@ -2650,7 +3322,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 57
+            "y": 38
           },
           "hiddenSeries": false,
           "id": 88,
@@ -2762,7 +3434,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 57
+            "y": 38
           },
           "hiddenSeries": false,
           "id": 71,
@@ -2793,7 +3465,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",nodeID!=\"wip\"}[$__rate_interval])) by (nodeID)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",nodeID!=\"wip\"}[$__interval])) by (nodeID)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2874,7 +3546,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 65
+            "y": 46
           },
           "hiddenSeries": false,
           "id": 120,
@@ -2986,7 +3658,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 65
+            "y": 46
           },
           "hiddenSeries": false,
           "id": 127,
@@ -3098,7 +3770,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 65
+            "y": 46
           },
           "hiddenSeries": false,
           "id": 89,
@@ -3129,7 +3801,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__rate_interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__interval])) by (error,errCode)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
@@ -3255,7 +3927,7 @@
         "includeAll": false,
         "label": null,
         "multi": true,
-        "name": "host",
+        "name": "endpoint",
         "options": [],
         "query": {
           "query": "label_values(${prefix}_driver_net_dial_calls{success=\"true\"},address)",
@@ -3270,25 +3942,31 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": [],
-          "value": []
+          "selected": false,
+          "text": [
+            "driver_core_invoke",
+            "driver_core_stream"
+          ],
+          "value": [
+            "driver_core_invoke",
+            "driver_core_stream"
+          ]
         },
         "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
-        "label": null,
+        "label": "Driver Metrics",
         "multi": true,
         "name": "metrics_with_address",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "driver_core_invoke",
             "value": "driver_core_invoke"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "driver_core_stream",
             "value": "driver_core_stream"
           },
@@ -3337,100 +4015,30 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "15s",
-          "value": "15s"
-        },
-        "description": null,
-        "error": null,
-        "hide": 2,
-        "includeAll": false,
-        "label": null,
-        "multi": false,
-        "name": "rate_interval",
-        "options": [
-          {
-            "selected": false,
-            "text": "1s",
-            "value": "1s"
-          },
-          {
-            "selected": false,
-            "text": "5s",
-            "value": "5s"
-          },
-          {
-            "selected": false,
-            "text": "10s",
-            "value": "10s"
-          },
-          {
-            "selected": true,
-            "text": "15s",
-            "value": "15s"
-          },
-          {
-            "selected": false,
-            "text": "30s",
-            "value": "30s"
-          },
-          {
-            "selected": false,
-            "text": "1m",
-            "value": "1m"
-          },
-          {
-            "selected": false,
-            "text": "5m",
-            "value": "5m"
-          },
-          {
-            "selected": false,
-            "text": "10m",
-            "value": "10m"
-          },
-          {
-            "selected": false,
-            "text": "15m",
-            "value": "15m"
-          },
-          {
-            "selected": false,
-            "text": "30m",
-            "value": "30m"
-          },
-          {
-            "selected": false,
-            "text": "1h",
-            "value": "1h"
-          }
-        ],
-        "query": "1s,5s,10s,15s,30s,1m,5m,10m,15m,30m,1h",
-        "queryValue": "",
-        "skipUrlSync": false,
-        "type": "custom"
-      },
-      {
-        "allValue": null,
-        "current": {
-          "selected": true,
-          "text": [],
-          "value": []
+          "text": [
+            "table_session_new",
+            "table_session_delete"
+          ],
+          "value": [
+            "table_session_new",
+            "table_session_delete"
+          ]
         },
         "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
-        "label": null,
+        "label": "Table Metrics",
         "multi": true,
         "name": "metrics_with_nodeid",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "table_session_new",
             "value": "table_session_new"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "table_session_delete",
             "value": "table_session_delete"
           },
@@ -3503,12 +4111,12 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "7q-VJmdnz",
-  "version": 64
+  "version": 69
 }
