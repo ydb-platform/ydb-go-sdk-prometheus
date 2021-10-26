@@ -115,6 +115,8 @@ github.com/ydb-platform/ydb-go-sdk-metrics v0.0.1 h1:94b7FfL6q7WIV6TBRs7WyUktxut
 github.com/ydb-platform/ydb-go-sdk-metrics v0.0.1/go.mod h1:l7kDmdzUam4lIALcfvGTxIyF4QBiteV/83JmkS2eXgs=
 github.com/ydb-platform/ydb-go-sdk-metrics v0.0.3 h1:F3zLY6ma1WQf9jBp6OEgHVlEfeGKg/I2jfh9z3bHTY4=
 github.com/ydb-platform/ydb-go-sdk-metrics v0.0.3/go.mod h1:/xsiy9NNWSm121nA0r/CYem0IS5pUMjXIX238I9WnnY=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.1.0-alpha h1:qXAG9RLxXJ7jx9TQGyLCfW9yVqWvvB2tINm9eUtbskg=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.1.0-alpha/go.mod h1:Xd9HKm4F10dIe1zeskkwEZwtVM+oyuQfisKhGpIrlcY=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.0-release/go.mod h1:RQPu87luEv7anp2YyDwijy/SXn+mrMaLRW800P40DoQ=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.0 h1:32zXZLh65mTh11Trb9FXo6mbGPJFFCCfaEgDCE4OCKo=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.0/go.mod h1:AVrHVTBBQQP93j4V1LduAq90BvFZAu0XNtkekY+ypDQ=
@@ -122,6 +124,8 @@ github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-beta h1:XQ6BXNmQAMk1lxuXi+wJU636d2I
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-beta/go.mod h1:aDAMirAXDdCeMRJV01EykAXXz6Ye2eM7H7PRJb6DvHo=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-rc0 h1:VkVeLUiNBLj1emZNk/yJKFa5ZmefDkTQbRS/4G+IJss=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-rc0/go.mod h1:aDAMirAXDdCeMRJV01EykAXXz6Ye2eM7H7PRJb6DvHo=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-rc1 h1:j4oYxr0Z6ghZrswCnaqvz6hjkbx0R2dN4hleHCas5fU=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1-rc1/go.mod h1:aDAMirAXDdCeMRJV01EykAXXz6Ye2eM7H7PRJb6DvHo=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.1/go.mod h1:J7/U2G5CkonthKt107njFNLefGXEH40WaEI59ghEVPQ=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.3 h1:CUjWzKaRRs4gO7ZXP0U+aUGSpixZT1M3cnu6YbElEYA=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.0.3/go.mod h1:k6HFq1cVE3ykqCTGPbZRqNBnTVvjoZ/pflWQLToEdXY=

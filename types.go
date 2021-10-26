@@ -62,14 +62,8 @@ type gaugeVec struct {
 	g *prometheus.GaugeVec
 }
 
-func (g *gaugeVec) With(labels ...metrics.Label) metrics.Gauge {
-	gauge, err := g.g.GetMetricWith(func() prometheus.Labels {
-		kv := make(prometheus.Labels, len(labels))
-		for _, label := range labels {
-			kv[string(label.Tag)] = string(label.Value)
-		}
-		return kv
-	}())
+func (g *gaugeVec) With(labels map[string]string) metrics.Gauge {
+	gauge, err := g.g.GetMetricWith(labels)
 	if err != nil {
 		panic(err)
 	}
