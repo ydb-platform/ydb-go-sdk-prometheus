@@ -79,8 +79,6 @@ func main() {
 			Algorithm:   config.BalancingAlgorithmRandomChoice,
 			PreferLocal: false,
 		}),
-		//ydb.WithDiscoveryInterval(5 * time.Second),
-		ydb.WithCertificatesFromFile("~/ydb_certs/ca.pem"),
 		creds,
 		ydb.WithSessionPoolSizeLimit(300),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
@@ -121,7 +119,7 @@ func main() {
 	}
 
 	concurrency := func() int {
-		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil {
+		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil && concurrency > 0 {
 			return concurrency
 		}
 		return 300
