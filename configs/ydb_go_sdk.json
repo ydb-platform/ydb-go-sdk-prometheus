@@ -1500,7 +1500,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "short",
+          "format": "reqps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1700,7 +1700,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "short",
+          "format": "reqps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -4529,12 +4529,12 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "_ALiWfKnz",
-  "version": 5
+  "version": 6
 }
