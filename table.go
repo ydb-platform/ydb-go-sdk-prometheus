@@ -18,7 +18,7 @@ func Table(registry prometheus.Registerer, opts ...option) trace.Table {
 	}
 
 	if c.details == 0 {
-		c.details = ^metrics.Details(0)
+		c.details = trace.DetailsAll
 	}
 	return metrics.Table(c)
 }

@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1635199193183,
+  "iteration": 1635890699492,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -318,6 +318,14 @@
         },
         {
           "exemplar": true,
+          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"true\"})) - (sum(${prefix}_table_pool_put_calls{success=\"true\"})) - (sum(${prefix}_table_pool_session_close_calls{success=\"true\"}))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "in-flight",
+          "refId": "D"
+        },
+        {
+          "exemplar": true,
           "expr": "${prefix}_table_pool_min_value",
           "hide": false,
           "interval": "",
@@ -334,7 +342,7 @@
         },
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_table_pool_wait_calls{success=\"wip\"}))-(sum(${prefix}_table_pool_wait_calls{success=~\"(true|false)\"}))",
+          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"wip\"})) - (sum(${prefix}_table_pool_get_calls{success=~\"(true|false)\"}))",
           "hide": false,
           "interval": "",
           "legendFormat": "wait",
@@ -354,7 +362,6 @@
           "custom": {
             "axisLabel": "",
             "axisPlacement": "auto",
-            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 19,
@@ -384,7 +391,6 @@
             }
           },
           "mappings": [],
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -422,7 +428,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(ydb_go_sdk_driver_core_state_calls{success=\"true\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))-(sum(ydb_go_sdk_driver_core_state_calls{success=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))",
+          "expr": "(sum(${prefix}_driver_core_state_calls{success!=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state)) - (sum(${prefix}_driver_core_state_calls{success=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))",
           "interval": "",
           "legendFormat": "{{state}}",
           "refId": "A"
@@ -1755,7 +1761,7 @@
             "h": 5,
             "w": 8,
             "x": 0,
-            "y": 34
+            "y": 42
           },
           "id": 2,
           "options": {
@@ -1817,7 +1823,7 @@
             "h": 5,
             "w": 9,
             "x": 8,
-            "y": 34
+            "y": 42
           },
           "id": 3,
           "options": {
@@ -1875,7 +1881,7 @@
             "h": 5,
             "w": 7,
             "x": 17,
-            "y": 34
+            "y": 42
           },
           "id": 23,
           "options": {
@@ -1941,7 +1947,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 35
+            "y": 48
           },
           "hiddenSeries": false,
           "id": 24,
@@ -2048,7 +2054,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 35
+            "y": 48
           },
           "hiddenSeries": false,
           "id": 28,
@@ -2160,7 +2166,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 35
+            "y": 48
           },
           "hiddenSeries": false,
           "id": 50,
@@ -2272,7 +2278,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 43
+            "y": 56
           },
           "hiddenSeries": false,
           "id": 51,
@@ -2378,7 +2384,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 43
+            "y": 56
           },
           "hiddenSeries": false,
           "id": 52,
@@ -2484,7 +2490,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 43
+            "y": 56
           },
           "hiddenSeries": false,
           "id": 53,
@@ -2590,7 +2596,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 51
+            "y": 64
           },
           "hiddenSeries": false,
           "id": 54,
@@ -2705,7 +2711,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 51
+            "y": 64
           },
           "hiddenSeries": false,
           "id": 55,
@@ -2811,7 +2817,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 51
+            "y": 64
           },
           "hiddenSeries": false,
           "id": 56,
@@ -4315,6 +4321,7 @@
         "current": {
           "selected": true,
           "text": [
+            "kikimr0425.search.yandex.net:2135",
             "kikimr0425.search.yandex.net:31051",
             "kikimr0447.search.yandex.net:31051",
             "kikimr0482.search.yandex.net:31051",
@@ -4322,6 +4329,7 @@
             "kikimr0602.search.yandex.net:31051"
           ],
           "value": [
+            "kikimr0425.search.yandex.net:2135",
             "kikimr0425.search.yandex.net:31051",
             "kikimr0447.search.yandex.net:31051",
             "kikimr0482.search.yandex.net:31051",
@@ -4352,7 +4360,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "driver_core_invoke",
             "driver_core_stream"
@@ -4521,12 +4529,12 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
-  "uid": "7q-VJmdnz",
-  "version": 71
+  "uid": "_ALiWfKnz",
+  "version": 5
 }

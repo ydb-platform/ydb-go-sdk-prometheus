@@ -17,7 +17,7 @@ func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
 		o(c)
 	}
 	if c.details == 0 {
-		c.details = ^metrics.Details(0)
+		c.details = trace.DetailsAll
 	}
 	return metrics.Driver(c)
 }

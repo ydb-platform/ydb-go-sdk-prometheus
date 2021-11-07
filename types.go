@@ -3,6 +3,7 @@ package metrics
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"strings"
 	"sync"
 )
@@ -13,7 +14,7 @@ const (
 )
 
 type config struct {
-	details   metrics.Details
+	details   trace.Details
 	separator string
 	registry  prometheus.Registerer
 	namespace string
@@ -90,7 +91,7 @@ func (c *config) GaugeVec(name string, description string, labelNames ...string)
 	return g
 }
 
-func (c *config) Details() metrics.Details {
+func (c *config) Details() trace.Details {
 	return c.details
 }
 
@@ -102,7 +103,7 @@ func WithNamespace(namespace string) option {
 	}
 }
 
-func WithDetails(details metrics.Details) option {
+func WithDetails(details trace.Details) option {
 	return func(c *config) {
 		c.details = details
 	}
