@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1635890699492,
+  "iteration": 1636342775067,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -1176,7 +1176,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "short",
+          "format": "reqps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1288,7 +1288,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "short",
+          "format": "reqps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1947,7 +1947,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 48
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 24,
@@ -2054,7 +2054,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 48
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 28,
@@ -2085,7 +2085,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_value{address=~\"$endpoint\"}[1s])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_value{address=~\"$endpoint\"}[$__interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2166,7 +2166,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 48
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 50,
@@ -2197,7 +2197,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_value{address=~\"$endpoint\"}[1s])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_value{address=~\"$endpoint\"}[$__interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2278,7 +2278,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 56
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 51,
@@ -2309,7 +2309,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[15s])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[15s])) by (address))",
+              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[$__interval])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[$__interval])) by (address))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2344,7 +2344,7 @@
           "yaxes": [
             {
               "$$hashKey": "object:163",
-              "format": "short",
+              "format": "reqps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -2384,7 +2384,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 56
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 52,
@@ -2415,7 +2415,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[15s])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2490,7 +2490,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 56
+            "y": 51
           },
           "hiddenSeries": false,
           "id": 53,
@@ -2521,7 +2521,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[15s])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2596,7 +2596,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 64
+            "y": 59
           },
           "hiddenSeries": false,
           "id": 54,
@@ -2627,7 +2627,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[15s])) by (error, errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[$__interval])) by (error, errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2636,7 +2636,7 @@
             },
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2711,7 +2711,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 64
+            "y": 59
           },
           "hiddenSeries": false,
           "id": 55,
@@ -2742,7 +2742,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2777,7 +2777,7 @@
           "yaxes": [
             {
               "$$hashKey": "object:163",
-              "format": "short",
+              "format": "reqps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -2817,7 +2817,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 64
+            "y": 59
           },
           "hiddenSeries": false,
           "id": 56,
@@ -2848,7 +2848,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[15s])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2910,7 +2910,7 @@
       "type": "row"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
@@ -2919,685 +2919,684 @@
         "y": 43
       },
       "id": 58,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 0,
-            "y": 36
-          },
-          "hiddenSeries": false,
-          "id": 59,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (address))",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{address}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Calls",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "reqps",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 36
-          },
-          "hiddenSeries": false,
-          "id": 84,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_address}_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Latency",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 36
-          },
-          "hiddenSeries": false,
-          "id": 90,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{address}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Errors [by endpoint]",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 0,
-            "y": 44
-          },
-          "hiddenSeries": false,
-          "id": 140,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method,success))",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{method}}, success={{success}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Calls [by method if exists]",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "reqps",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 44
-          },
-          "hiddenSeries": false,
-          "id": 154,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_address}_value{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Value [if exists]",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 44
-          },
-          "hiddenSeries": false,
-          "id": 70,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "repeat": null,
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{error}} [{{errCode}}]",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Errors [by type]",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        }
-      ],
+      "panels": [],
       "repeat": "metrics_with_address",
       "title": "$metrics_with_address",
       "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 44
+      },
+      "hiddenSeries": false,
+      "id": 59,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (address))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Calls",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 44
+      },
+      "hiddenSeries": false,
+      "id": 84,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_${metrics_with_address}_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "ns",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 44
+      },
+      "hiddenSeries": false,
+      "id": 90,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": false,
+          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Errors [by endpoint]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 52
+      },
+      "hiddenSeries": false,
+      "id": 140,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method,success))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{method}}, success={{success}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Calls [by method if exists]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 52
+      },
+      "hiddenSeries": false,
+      "id": 154,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_${metrics_with_address}_value{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Value [if exists]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 52
+      },
+      "hiddenSeries": false,
+      "id": 70,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": false,
+          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{error}} [{{errCode}}]",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Errors [by type]",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "collapsed": true,
@@ -3606,7 +3605,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 77
       },
       "id": 86,
       "panels": [
@@ -4288,7 +4287,7 @@
       "type": "row"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 31,
   "style": "dark",
   "tags": [],
@@ -4319,22 +4318,12 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
-            "kikimr0425.search.yandex.net:2135",
-            "kikimr0425.search.yandex.net:31051",
-            "kikimr0447.search.yandex.net:31051",
-            "kikimr0482.search.yandex.net:31051",
-            "kikimr0518.search.yandex.net:31051",
-            "kikimr0602.search.yandex.net:31051"
+            "kikimr0425.search.yandex.net:31051"
           ],
           "value": [
-            "kikimr0425.search.yandex.net:2135",
-            "kikimr0425.search.yandex.net:31051",
-            "kikimr0447.search.yandex.net:31051",
-            "kikimr0482.search.yandex.net:31051",
-            "kikimr0518.search.yandex.net:31051",
-            "kikimr0602.search.yandex.net:31051"
+            "kikimr0425.search.yandex.net:31051"
           ]
         },
         "datasource": null,
@@ -4362,12 +4351,12 @@
         "current": {
           "selected": true,
           "text": [
-            "driver_core_invoke",
-            "driver_core_stream"
+            "driver_net_dial",
+            "driver_net_close"
           ],
           "value": [
-            "driver_core_invoke",
-            "driver_core_stream"
+            "driver_net_dial",
+            "driver_net_close"
           ]
         },
         "description": null,
@@ -4380,11 +4369,21 @@
         "options": [
           {
             "selected": true,
+            "text": "driver_net_dial",
+            "value": "driver_net_dial"
+          },
+          {
+            "selected": true,
+            "text": "driver_net_close",
+            "value": "driver_net_close"
+          },
+          {
+            "selected": false,
             "text": "driver_core_invoke",
             "value": "driver_core_invoke"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "driver_core_stream",
             "value": "driver_core_stream"
           },
@@ -4424,7 +4423,7 @@
             "value": "driver_cluster_remove"
           }
         ],
-        "query": "driver_core_invoke,driver_core_stream,driver_cluster_pessimize,driver_cluster_get,driver_cluster_take,driver_cluster_put,driver_cluster_insert,driver_cluster_update,driver_cluster_remove",
+        "query": "driver_net_dial,driver_net_close,driver_core_invoke,driver_core_stream,driver_cluster_pessimize,driver_cluster_get,driver_cluster_take,driver_cluster_put,driver_cluster_insert,driver_cluster_update,driver_cluster_remove",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -4432,7 +4431,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "table_session_new",
             "table_session_delete"
@@ -4529,12 +4528,12 @@
     ]
   },
   "time": {
-    "from": "now-6h",
-    "to": "now"
+    "from": "2021-11-08T01:44:59.353Z",
+    "to": "2021-11-08T01:46:20.635Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "_ALiWfKnz",
-  "version": 6
+  "version": 11
 }
