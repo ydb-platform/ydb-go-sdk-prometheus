@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -21,32 +20,13 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
-var (
-	flagSet    = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	connection string
-	port       int
-)
-
 func init() {
-	flagSet.Usage = func() {
-		out := flagSet.Output()
-		_, _ = fmt.Fprintf(out, "Usage:\n%s command [options]\n", os.Args[0])
-		_, _ = fmt.Fprintf(out, "\nOptions:\n")
-		flagSet.PrintDefaults()
-	}
-	flagSet.StringVar(&connection,
-		"ydb", "",
-		"YDB connection string",
-	)
-	flagSet.IntVar(&port,
-		"port", 8080,
-		"prometheus agent port",
-	)
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
@@ -58,10 +38,6 @@ func (q quet) Write(p []byte) (n int, err error) {
 }
 
 func main() {
-	err := flagSet.Parse(os.Args[1:])
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
 	var creds ydb.Option
 	if token, has := os.LookupEnv("YDB_ACCESS_TOKEN_CREDENTIALS"); has {
@@ -73,7 +49,7 @@ func main() {
 	registry := prometheus.NewRegistry()
 	db, err := ydb.New(
 		ctx,
-		ydb.WithConnectionString(connection),
+		ydb.WithConnectionString(os.Getenv("YDB_CONNECTION_STRING")),
 		ydb.WithDialTimeout(5*time.Second),
 		ydb.WithBalancingConfig(config.BalancerConfig{
 			Algorithm:   config.BalancingAlgorithmRandomChoice,
@@ -103,7 +79,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	go httpServe(wg, port, registry)
+	go httpServe(wg, os.Getenv("PORT"), registry)
 
 	errs := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
@@ -177,13 +153,13 @@ func main() {
 	wg.Wait()
 }
 
-func httpServe(wg *sync.WaitGroup, port int, registry *prometheus.Registry) {
+func httpServe(wg *sync.WaitGroup, port string, registry *prometheus.Registry) {
 	defer wg.Done()
 	time.Sleep(time.Second)
 	http.Handle("/metrics", promhttp.InstrumentMetricHandler(
 		registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
 	))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+	log.Fatal(http.ListenAndServe(":" + port, nil))
 }
 
 func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
@@ -194,11 +170,12 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 				options.WithColumn("series_id", types.Optional(types.TypeUint64)),
 				options.WithColumn("title", types.Optional(types.TypeUTF8)),
 				options.WithColumn("series_info", types.Optional(types.TypeUTF8)),
-				options.WithColumn("release_date", types.Optional(types.TypeUint64)),
+				options.WithColumn("release_date", types.Optional(types.TypeDate)),
 				options.WithColumn("comment", types.Optional(types.TypeUTF8)),
 				options.WithPrimaryKeyColumn("series_id"),
 			)
 		},
+		table.WithIdempotent(),
 	)
 	if err != nil {
 		errs.With(map[string]string{
@@ -228,11 +205,11 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 					types.StructFieldValue("series_id", types.Uint64Value(uint64(i+shift+3))),
 					types.StructFieldValue("title", types.UTF8Value(fmt.Sprintf("series No. %d title", i+shift+3))),
 					types.StructFieldValue("series_info", types.UTF8Value(fmt.Sprintf("series No. %d info", i+shift+3))),
-					types.StructFieldValue("release_date", types.Uint64Value(uint64(time.Since(time.Unix(0, 0))/time.Hour/24))),
+					types.StructFieldValue("release_date", types.DateValueFromTime(time.Now())),
 					types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+shift+3))),
 				))
 			}
-			err = c.Do(
+			err := c.Do(
 				ctx,
 				func(ctx context.Context, session table.Session) (err error) {
 					return session.BulkUpsert(
@@ -241,6 +218,7 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 						types.ListValue(rows...),
 					)
 				},
+				table.WithIdempotent(),
 			)
 			if err != nil {
 				errs.With(map[string]string{
@@ -263,13 +241,12 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 }
 
 func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
-	query := fmt.Sprintf(`
+	var query = fmt.Sprintf(`
 		PRAGMA TablePathPrefix("%s");
-		$format = DateTime::Format("%%Y-%%m-%%d");
 		SELECT
 			series_id,
 			title,
-			$format(DateTime::FromSeconds(CAST(DateTime::ToSeconds(DateTime::IntervalFromDays(CAST(release_date AS Int16))) AS Uint32))) AS release_date
+			release_date
 		FROM series LIMIT %d;`,
 		prefix,
 		limit,
@@ -277,7 +254,9 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 	err = c.Do(
 		ctx,
 		func(ctx context.Context, s table.Session) error {
-			res, err := s.StreamExecuteScanQuery(
+			var res resultset.Result
+			count = 0
+			res, err = s.StreamExecuteScanQuery(
 				ctx,
 				query,
 				table.NewQueryParameters(),
@@ -285,10 +264,13 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 			if err != nil {
 				return err
 			}
+			defer func() {
+				_ = res.Close()
+			}()
 			var (
 				id    *uint64
 				title *string
-				date  *[]byte
+				date  *time.Time
 			)
 			log.Printf("> select_simple_transaction:\n")
 			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
@@ -306,6 +288,7 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 			}
 			return res.Err()
 		},
+		table.WithIdempotent(),
 	)
-	return count, err
+	return
 }
