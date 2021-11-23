@@ -105,7 +105,7 @@ func WithNamespace(namespace string) option {
 
 func WithDetails(details trace.Details) option {
 	return func(c *config) {
-		c.details = details
+		c.details |= details
 	}
 }
 
