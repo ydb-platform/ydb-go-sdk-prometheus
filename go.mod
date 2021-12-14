@@ -4,6 +4,6 @@ go 1.16
 
 require (
 	github.com/prometheus/client_golang v1.11.0
-	github.com/ydb-platform/ydb-go-sdk-metrics v0.4.3
-	github.com/ydb-platform/ydb-go-sdk/v3 v3.4.2
+	github.com/ydb-platform/ydb-go-sdk-metrics v0.4.4-0.20211214121653-bbfc6b0aed92
+	github.com/ydb-platform/ydb-go-sdk/v3 v3.4.5-0.20211210140815-07ca27ef171c
 )

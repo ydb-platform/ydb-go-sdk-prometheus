@@ -20,7 +20,7 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/resultset"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
@@ -66,7 +66,6 @@ func main() {
 			registry,
 			metrics.WithSeparator("_"),
 		)),
-		ydb.WithGrpcConnectionTTL(5*time.Second),
 	)
 	if err != nil {
 		panic(err)
@@ -159,7 +158,7 @@ func httpServe(wg *sync.WaitGroup, port string, registry *prometheus.Registry) {
 	http.Handle("/metrics", promhttp.InstrumentMetricHandler(
 		registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
 	))
-	log.Fatal(http.ListenAndServe(":" + port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
@@ -254,7 +253,7 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 	err = c.Do(
 		ctx,
 		func(ctx context.Context, s table.Session) error {
-			var res resultset.Result
+			var res result.StreamResult
 			count = 0
 			res, err = s.StreamExecuteScanQuery(
 				ctx,
