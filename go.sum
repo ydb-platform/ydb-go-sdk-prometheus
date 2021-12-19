@@ -111,8 +111,8 @@ github.com/ydb-platform/ydb-go-genproto v0.0.0-20211103074319-526e57659e16/go.mo
 github.com/ydb-platform/ydb-go-sdk-metrics v0.4.4-0.20211219130658-62a9aff609ec h1:fH8SWGqcxPN+mPyCsMByl7h0TWijSPqIy91ztwbzgpk=
 github.com/ydb-platform/ydb-go-sdk-metrics v0.4.4-0.20211219130658-62a9aff609ec/go.mod h1:Bfb2L02w/lsUU3euCzK3iXj3Bt+ymorodcmXJrzdeL8=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.5.0-alpha/go.mod h1:6/fgm6mEM8ctxSBKJDd9FhOXg0y3Ftgva4R4FvnUjRs=
-github.com/ydb-platform/ydb-go-sdk/v3 v3.5.0-beta h1:xpNQFNGMdiokHxVVmfJC5RvDwC1aljBfaFThnc6u7k0=
-github.com/ydb-platform/ydb-go-sdk/v3 v3.5.0-beta/go.mod h1:6/fgm6mEM8ctxSBKJDd9FhOXg0y3Ftgva4R4FvnUjRs=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.5.0-rc0 h1:wMqMaICInLPv7sskSZbLBCb4RC8DvflOIhmUGazU1lI=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.5.0-rc0/go.mod h1:6/fgm6mEM8ctxSBKJDd9FhOXg0y3Ftgva4R4FvnUjRs=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
