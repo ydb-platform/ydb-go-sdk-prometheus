@@ -1,4 +1,11 @@
 {
+  "__inputs": [
+    {
+      "name": "dataSource",
+      "type": "datasource",
+      "pluginId": "prometheus"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -23,14 +30,14 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 5,
-  "iteration": 1636342775067,
+  "id": null,
+  "iteration": null,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -47,7 +54,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -148,7 +155,7 @@
       }
     },
     {
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -234,7 +241,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -353,7 +360,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -428,7 +435,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_driver_core_state_calls{success!=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state)) - (sum(${prefix}_driver_core_state_calls{success=\"wip\",address=~\"$endpoint\",state=~\"(online|offline|banned)\"}) by (state))",
+          "expr": "(sum(${prefix}_driver_core_state_calls{success!=\"wip\",state=~\"(online|offline|banned)\"}) by (state)) - (sum(${prefix}_driver_core_state_calls{success=\"wip\",state=~\"(online|offline|banned)\"}) by (state))",
           "interval": "",
           "legendFormat": "{{state}}",
           "refId": "A"
@@ -442,7 +449,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -486,7 +493,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(rate(${prefix}_driver_core_invoke_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method))",
+          "expr": "(sum(rate(${prefix}_driver_core_invoke_calls{success=~\"(true|false)\"}[$__rate_interval])) by (method))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{method}}",
@@ -554,7 +561,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -598,7 +605,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(rate(${prefix}_driver_core_stream_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method))",
+          "expr": "(sum(rate(${prefix}_driver_core_stream_calls{success=~\"(true|false)\"}[$__rate_interval])) by (method))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{method}}",
@@ -666,7 +673,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -710,7 +717,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$endpoint\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
+          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -772,7 +779,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -816,7 +823,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_driver_core_invoke_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "expr": "(sum(${prefix}_driver_core_invoke_latency{success=~\"(true|false)\"}) by (address))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{address}}",
@@ -884,7 +891,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -928,7 +935,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_driver_core_stream_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "expr": "(sum(${prefix}_driver_core_stream_latency{success=~\"(true|false)\"}) by (address))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{address}}",
@@ -992,7 +999,7 @@
       }
     },
     {
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1068,7 +1075,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(ydb_go_sdk_driver_core_take_calls{success=\"true\",address=~\"$endpoint\"}) by (address))-(sum(ydb_go_sdk_driver_core_release_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
+          "expr": "(sum(ydb_go_sdk_driver_core_take_calls{success=\"true\"}) by (address))-(sum(ydb_go_sdk_driver_core_release_calls{success=\"true\"}) by (address))",
           "interval": "",
           "legendFormat": "{{address}}",
           "refId": "A"
@@ -1091,7 +1098,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1135,7 +1142,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_driver_core_invoke_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "expr": "sum(rate(${prefix}_driver_core_invoke_errors{}[$__rate_interval])) by (error,errCode)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1203,7 +1210,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1247,7 +1254,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_driver_core_stream_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "expr": "sum(rate(${prefix}_driver_core_stream_errors{}[$__rate_interval])) by (error,errCode)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1315,7 +1322,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1359,7 +1366,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(${prefix}_table_retry_calls{stage=\"init\"}[$__interval]))",
+          "expr": "sum(rate(${prefix}_table_retry_calls{stage=\"init\"}[$__rate_interval]))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{method}}",
@@ -1427,7 +1434,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1527,7 +1534,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1627,7 +1634,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -1671,7 +1678,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(${prefix}_table_retry_errors{stage=\"finish\",success!=\"true\"}[$__interval])) by (error, errCode)",
+          "expr": "sum(rate(${prefix}_table_retry_errors{stage=\"finish\",success!=\"true\"}[$__rate_interval])) by (error, errCode)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1724,7 +1731,7 @@
     },
     {
       "collapsed": true,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1734,7 +1741,7 @@
       "id": 49,
       "panels": [
         {
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1794,7 +1801,7 @@
           "type": "stat"
         },
         {
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1856,7 +1863,7 @@
           "type": "stat"
         },
         {
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1920,7 +1927,7 @@
     },
     {
       "collapsed": true,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1934,7 +1941,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -1979,7 +1986,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\",address=~\"$endpoint\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\",address=~\"$endpoint\"}) by (address))",
+              "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2041,7 +2048,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2085,7 +2092,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_value{address=~\"$endpoint\"}[$__interval])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_value{}[$__rate_interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2153,7 +2160,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2197,7 +2204,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_value{address=~\"$endpoint\"}[$__interval])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_value{}[$__rate_interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2265,7 +2272,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2309,7 +2316,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[$__interval])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[$__interval])) by (address))",
+              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{}[$__rate_interval])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{}[$__rate_interval])) by (address))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2371,7 +2378,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2415,7 +2422,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__rate_interval])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2477,7 +2484,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2521,7 +2528,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__rate_interval])) by (address)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2583,7 +2590,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2627,7 +2634,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_dial_errors{address=~\"$endpoint\"}[$__interval])) by (error, errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_dial_errors{}[$__rate_interval])) by (error, errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2636,7 +2643,7 @@
             },
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_close_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_close_errors{}[$__rate_interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2698,7 +2705,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2742,7 +2749,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__rate_interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2804,7 +2811,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -2848,7 +2855,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__rate_interval])) by (error,errCode)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2911,7 +2918,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2929,7 +2936,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -2974,7 +2981,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (address))",
+          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__rate_interval])) by (address))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{address}}",
@@ -3042,7 +3049,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -3086,7 +3093,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_${metrics_with_address}_latency{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "expr": "(sum(${prefix}_${metrics_with_address}_latency{success=~\"(true|false)\"}) by (address))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "",
@@ -3154,7 +3161,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -3198,7 +3205,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (address)",
+          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__rate_interval])) by (address)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{address}}",
@@ -3266,7 +3273,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -3310,7 +3317,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{address=~\"$endpoint\",success=~\"(true|false)\"}[$__interval])) by (method,success))",
+          "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__rate_interval])) by (method,success))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{method}}, success={{success}}",
@@ -3378,7 +3385,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -3422,7 +3429,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_${metrics_with_address}_value{address=~\"$endpoint\",success=~\"(true|false)\"}) by (address))",
+          "expr": "(sum(${prefix}_${metrics_with_address}_value{success=~\"(true|false)\"}) by (address))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "",
@@ -3490,7 +3497,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "fieldConfig": {
         "defaults": {
           "links": []
@@ -3535,7 +3542,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{address=~\"$endpoint\"}[$__interval])) by (error,errCode)",
+          "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__rate_interval])) by (error,errCode)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -3600,7 +3607,7 @@
     },
     {
       "collapsed": true,
-      "datasource": null,
+      "datasource": "${dataSource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3614,7 +3621,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -3658,7 +3665,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}[$interval])) by (nodeID))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}[$__rate_interval])) by (nodeID))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{nodeID}}",
@@ -3726,7 +3733,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -3838,7 +3845,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -3882,7 +3889,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",nodeID!=\"wip\"}[$__interval])) by (nodeID)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",nodeID!=\"wip\"}[$__rate_interval])) by (nodeID)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -3950,7 +3957,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -4062,7 +4069,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -4174,7 +4181,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "${dataSource}",
           "fieldConfig": {
             "defaults": {
               "links": []
@@ -4218,7 +4225,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__rate_interval])) by (error,errCode)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
@@ -4314,37 +4321,6 @@
         "query": "ydb_go_sdk",
         "skipUrlSync": false,
         "type": "textbox"
-      },
-      {
-        "allValue": null,
-        "current": {
-          "selected": false,
-          "text": [
-            "kikimr0425.search.yandex.net:31051"
-          ],
-          "value": [
-            "kikimr0425.search.yandex.net:31051"
-          ]
-        },
-        "datasource": null,
-        "definition": "label_values(${prefix}_driver_net_dial_calls{success=\"true\"},address)",
-        "description": null,
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
-        "label": null,
-        "multi": true,
-        "name": "endpoint",
-        "options": [],
-        "query": {
-          "query": "label_values(${prefix}_driver_net_dial_calls{success=\"true\"},address)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
       },
       {
         "allValue": null,
@@ -4534,6 +4510,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
-  "uid": "_ALiWfKnz",
-  "version": 11
+  "uid": null,
+  "version": null
 }
