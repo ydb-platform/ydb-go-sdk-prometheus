@@ -17,7 +17,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/ydb-platform/ydb-go-sdk/v3"
-	"github.com/ydb-platform/ydb-go-sdk/v3/config/balancer"
+	"github.com/ydb-platform/ydb-go-sdk/v3/balancer"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
@@ -53,6 +53,7 @@ func main() {
 		ydb.WithDialTimeout(5*time.Second),
 		ydb.WithBalancer(balancer.RandomChoice()),
 		creds,
+		ydb.WithConnectionTTL(time.Second*5),
 		ydb.WithSessionPoolSizeLimit(80),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
 		ydb.WithTraceDriver(metrics.Driver(

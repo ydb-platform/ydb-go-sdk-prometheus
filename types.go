@@ -2,12 +2,13 @@ package metrics
 
 import (
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/ydb-platform/ydb-go-sdk-metrics"
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	metrics "github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 const (
