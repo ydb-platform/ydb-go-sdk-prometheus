@@ -16,16 +16,11 @@ func main() {
 	db, err := ydb.New(
 		ctx,
 		ydb.WithConnectionString(os.Getenv("YDB_CONNECTION_STRING")),
-		ydb.WithTraceDriver(metrics.Driver(
-			registry,
+		ydb.WithAnonymousCredentials(),
+		metrics.WithTraces(registry,
 			metrics.WithSeparator("_"),
 			metrics.WithDetails(trace.DetailsAll),
-		)),
-		ydb.WithTraceTable(metrics.Table(
-			registry,
-			metrics.WithSeparator("_"),
-			metrics.WithDetails(trace.DetailsAll),
-		)),
+		),
 	)
 	if err != nil {
 		panic(err)

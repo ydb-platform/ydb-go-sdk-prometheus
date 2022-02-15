@@ -6,8 +6,8 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
-// Driver makes Driver with prometheus metrics publishing
-func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
+// Ratelimiter makes trace.Ratelimiter with prometheus metrics publishing
+func Ratelimiter(registry prometheus.Registerer, opts ...option) trace.Ratelimiter {
 	c := &config{
 		registry:  registry,
 		namespace: defaultNamespace,
@@ -19,5 +19,5 @@ func Driver(registry prometheus.Registerer, opts ...option) trace.Driver {
 	if c.details == 0 {
 		c.details = trace.DetailsAll
 	}
-	return metrics.Driver(c)
+	return metrics.Ratelimiter(c)
 }
