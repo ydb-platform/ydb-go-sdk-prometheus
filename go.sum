@@ -122,9 +122,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/ydb-platform/ydb-go-genproto v0.0.0-20220203104745-929cf9c248bc h1:xvTP0fhYNm+Ws+xC34jzF9EdorPUKkucJr0TyybqVSk=
 github.com/ydb-platform/ydb-go-genproto v0.0.0-20220203104745-929cf9c248bc/go.mod h1:cc138nptTn9eKptCQl/grxP6pBKpo/bnXDiOxuVZtps=
-github.com/ydb-platform/ydb-go-sdk-metrics v0.7.0-rc0 h1:RAZDwMM7gABooWwAW61ulItFoY+IkTdv45pIQ72RxIE=
-github.com/ydb-platform/ydb-go-sdk-metrics v0.7.0-rc0/go.mod h1:fbNZiPVSzH3+EUJ+D2De9MPmLA2Ea5k6qtnB2Tulsz4=
-github.com/ydb-platform/ydb-go-sdk/v3 v3.10.0-rc1/go.mod h1:/KCidORSzHOsn+j46Iqb8Tf6UXNhPWRMcrMieh+i9Xw=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.7.0 h1:Y5fobio6si8DYXRK6FW/VXZepxCQAmeTCXE0gYFod8M=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.7.0/go.mod h1:mUOwLWE31NVTRq0Tlq729lmVLyzwDxkDVTko81aHLs4=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.10.0 h1:UkRsVDGvv2ZbCrUPDfiX24FcVaUp5EKHWTriu1dm0ds=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.10.0/go.mod h1:/KCidORSzHOsn+j46Iqb8Tf6UXNhPWRMcrMieh+i9Xw=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
