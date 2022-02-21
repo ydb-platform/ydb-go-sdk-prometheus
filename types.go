@@ -206,11 +206,11 @@ func (c *config) TimerVec(name string, labelNames ...string) registry.TimerVec {
 	return t
 }
 
-func (c *config) HistogramVec(name string, labelNames ...string) registry.HistogramVec {
+func (c *config) HistogramVec(name string, buckets []float64, labelNames ...string) registry.HistogramVec {
 	opts := prometheus.HistogramOpts{
 		Namespace: c.namespace,
 		Name:      name,
-		Buckets:   defaultTimerBuckets,
+		Buckets:   buckets,
 	}
 	histogramsOpts := newHistogramOpts(opts)
 	c.m.Lock()
