@@ -6,7 +6,7 @@ metrics package helps to create ydb-go-sdk traces with monitoring over prometheu
 ```go
 import (
     "github.com/ydb-platform/ydb-go-sdk/v3"
-    "github.com/ydb-platform/ydb-go-sdk-prometheus"
+    ydbPrometheus "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
 ...
@@ -16,8 +16,7 @@ import (
 	db, err := ydb.New(
 		ctx,
 		ydb.MustConnectionString(connection),
-		ydb.WithTraceDriver(metrics.Driver(registry)),
-		ydb.WithTraceTable(metrics.Table(registry)),
+		ydbPrometheus.WithTraces(registry),
 	)
 
 ```
