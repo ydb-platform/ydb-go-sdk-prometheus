@@ -46,16 +46,12 @@ func main() {
 		ydb.WithBalancer(balancers.RandomChoice()),
 		creds,
 		ydb.WithConnectionTTL(time.Second*5),
-		ydb.WithSessionPoolSizeLimit(80),
+		ydb.WithSessionPoolSizeLimit(10),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		ydb.WithTraceDriver(metrics.Driver(
+		metrics.WithTraces(
 			registry,
 			metrics.WithSeparator("_"),
-		)),
-		ydb.WithTraceTable(metrics.Table(
-			registry,
-			metrics.WithSeparator("_"),
-		)),
+		),
 	)
 	if err != nil {
 		panic(err)
