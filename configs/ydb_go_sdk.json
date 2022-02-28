@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1642412630839,
+  "iteration": 1646053656588,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -91,7 +91,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(${prefix}_driver_discovery_value)",
+          "expr": "avg(${prefix}_discovery_value)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "Endpoints",
@@ -102,7 +102,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "ListEndpoints",
+      "title": "Cluster endpoints",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -224,7 +224,8 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_table_session_new_calls{success=\"true\"}) by (nodeID)) - (sum(${prefix}_table_session_delete_calls{success!=\"wip\"}) by (nodeID))",
+          "expr": "(sum(${prefix}_table_session_new_calls{success=\"true\"}) by (nodeID)) - (sum(${prefix}_table_session_delete_calls{success!=\"wip\"}) by (nodeID) OR on() vector(0))",
+          "hide": false,
           "interval": "",
           "legendFormat": "NodeID: {{nodeID}}",
           "refId": "A"
@@ -310,15 +311,15 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_table_pool_session_new_calls{success=\"true\"})) - (sum(${prefix}_table_pool_session_close_calls{success!=\"wip\"}))",
+          "expr": "(sum(${prefix}_table_pool_session_new_calls{success=\"true\"})) - (sum(${prefix}_table_pool_session_close_calls{success!=\"wip\"}) OR on() vector(0))",
           "hide": false,
           "interval": "",
           "legendFormat": "balance",
-          "refId": "E"
+          "refId": "H"
         },
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"true\"})) - (sum(${prefix}_table_pool_put_calls{success=\"true\"})) - (sum(${prefix}_table_pool_session_close_calls{success=\"true\"}))",
+          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"true\"})) - (sum(${prefix}_table_pool_put_calls{success=\"true\"})) - (sum(${prefix}_table_pool_session_close_calls{success=\"true\"}) OR on() vector(0))",
           "hide": false,
           "interval": "",
           "legendFormat": "in-flight",
@@ -342,11 +343,19 @@
         },
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"wip\"})) - (sum(${prefix}_table_pool_get_calls{success=~\"(true|false)\"}))",
+          "expr": "(sum(${prefix}_table_pool_get_calls{success=\"wip\"})) - (sum(${prefix}_table_pool_get_calls{success=~\"(true|false)\"}) OR on() vector(0))",
           "hide": false,
           "interval": "",
           "legendFormat": "wait",
           "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "${prefix}_table_pool_size_value",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "size",
+          "refId": "F"
         }
       ],
       "title": "Sessions pool balance",
@@ -428,7 +437,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(${prefix}_driver_core_state_calls{success!=\"wip\",state=~\"(online|offline|banned)\"}) by (state)) - (sum(${prefix}_driver_core_state_calls{success=\"wip\",state=~\"(online|offline|banned)\"}) by (state))",
+          "expr": "(sum(${prefix}_driver_core_state_calls{success!=\"wip\",state=~\"(online|offline|banned)\"}) by (state)) - (sum(${prefix}_driver_core_state_calls{success=\"wip\",state=~\"(online|offline|banned)\"}) by (state) OR on() vector(0))",
           "interval": "",
           "legendFormat": "{{state}}",
           "refId": "A"
@@ -710,7 +719,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address))",
+          "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address) OR on() vector(0))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1176,18 +1185,10 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum(ydb_go_sdk_driver_core_take_calls{success=\"true\"}) by (address))-(sum(ydb_go_sdk_driver_core_release_calls{success=\"true\"}) by (address))",
+          "expr": "sum(ydb_go_sdk_driver_core_usages_value) by (address)",
           "interval": "",
           "legendFormat": "{{address}}",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{address}}",
-          "refId": "B"
         }
       ],
       "title": "Connections usage",
@@ -1243,7 +1244,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_driver_core_invoke_errors{}[$__interval])) by (error,errCode)",
+          "expr": "sum(rate(${prefix}_driver_core_invoke_errors{}[$__interval])) by (error,errCode) OR on() vector(0)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1355,7 +1356,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum(rate(${prefix}_driver_core_stream_errors{}[$__interval])) by (error,errCode)",
+          "expr": "sum(rate(${prefix}_driver_core_stream_errors{}[$__interval])) by (error,errCode) OR on() vector(0)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1467,7 +1468,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(${prefix}_table_retry_calls{stage=\"init\"}[$__interval]))",
+          "expr": "sum(rate(${prefix}_table_do_calls{stage=\"init\"}[$__interval])) OR on() vector(0)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{method}}",
@@ -1478,7 +1479,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Table Retry Requests",
+      "title": "Table Do Calls",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1579,18 +1580,73 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(${prefix}_table_retry_value{stage=\"finish\"}) by (idempotent)",
+          "expr": "histogram_quantile(0.99, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
           "format": "time_series",
+          "hide": false,
           "interval": "",
-          "legendFormat": "idempotent={{idempotent}}",
+          "legendFormat": "p99",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p95",
           "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p90",
+          "refId": "C"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.75, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p75",
+          "refId": "D"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p50",
+          "refId": "E"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.25, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p25",
+          "refId": "F"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(rate(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p10",
+          "refId": "G"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Table Retry Attempts",
+      "title": "Table Do Attempts",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1608,7 +1664,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "reqps",
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1679,7 +1735,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1688,7 +1744,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1697,7 +1753,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.90, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.90, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1706,7 +1762,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.75, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.75, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1715,7 +1771,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.50, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1724,7 +1780,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.25, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.25, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1733,7 +1789,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.10, sum(rate(${prefix}_table_retry_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.10, sum(rate(${prefix}_table_do_latency_bucket{stage=\"finish\"}[$__rate_interval])) by (le))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1745,7 +1801,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Table Retry Latency",
+      "title": "Table Do Latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1763,7 +1819,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:163",
-          "format": "ns",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1834,7 +1890,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(${prefix}_table_retry_errors{stage=\"finish\",success!=\"true\"}[$__interval])) by (error, errCode)",
+          "expr": "sum(rate(${prefix}_table_do_errors{stage=\"finish\",success!=\"true\"}[$__interval])) by (error, errCode) OR on() vector(0)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "{{error}} [{{errCode}}]",
@@ -1886,208 +1942,13 @@
       }
     },
     {
-      "collapsed": false,
-      "datasource": "Prometheus",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 41
-      },
-      "id": 49,
-      "panels": [],
-      "title": "system",
-      "type": "row"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 0,
-        "y": 42
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "expr": "${prefix}_system_goroutines",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Goroutines",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 9,
-        "x": 8,
-        "y": 42
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "expr": "${prefix}_system_memory",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Memory",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 17,
-        "y": 42
-      },
-      "id": 23,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "${prefix}_system_uptime",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Uptime",
-      "type": "stat"
-    },
-    {
       "collapsed": true,
       "datasource": "Prometheus",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 41
       },
       "id": 47,
       "panels": [
@@ -2109,7 +1970,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 43
+            "y": 2
           },
           "hiddenSeries": false,
           "id": 24,
@@ -2141,7 +2002,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address))",
+              "expr": "((sum(${prefix}_driver_net_dial_calls{success=\"true\"}) by (address)) - (sum(${prefix}_driver_net_close_calls{success=\"true\"}) by (address)))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2216,7 +2077,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 43
+            "y": 2
           },
           "hiddenSeries": false,
           "id": 28,
@@ -2247,7 +2108,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_value{}[$__interval])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_value_bucket{}[$__interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2328,7 +2189,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 43
+            "y": 2
           },
           "hiddenSeries": false,
           "id": 50,
@@ -2359,7 +2220,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_value{}[$__interval])/1024) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_value_bucket{}[$__interval])/1024) by (address)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -2440,7 +2301,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 51
+            "y": 10
           },
           "hiddenSeries": false,
           "id": 51,
@@ -2471,7 +2332,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{}[$__interval])) by (address)) + (sum(rate(${prefix}_driver_net_close_errors{}[$__interval])) by (address))",
+              "expr": "(sum(rate(${prefix}_driver_net_dial_errors{}[$__interval])) by (address) OR on() vector(0))",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2546,7 +2407,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 51
+            "y": 10
           },
           "hiddenSeries": false,
           "id": 52,
@@ -2577,7 +2438,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__interval])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__interval])) by (address) OR on() vector(0)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2652,7 +2513,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 51
+            "y": 10
           },
           "hiddenSeries": false,
           "id": 53,
@@ -2683,7 +2544,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__interval])) by (address)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__interval])) by (address) OR on() vector(0)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2758,7 +2619,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 59
+            "y": 18
           },
           "hiddenSeries": false,
           "id": 54,
@@ -2789,21 +2650,12 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_dial_errors{}[$__interval])) by (error, errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_dial_errors{}[$__interval])) by (error, errCode) OR on() vector(0)",
               "format": "time_series",
               "hide": false,
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
               "refId": "B"
-            },
-            {
-              "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_close_errors{}[$__interval])) by (error,errCode)",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "legendFormat": "{{error}} [{{errCode}}]",
-              "refId": "A"
             }
           ],
           "thresholds": [],
@@ -2873,7 +2725,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 59
+            "y": 18
           },
           "hiddenSeries": false,
           "id": 55,
@@ -2904,7 +2756,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_read_errors{}[$__interval])) by (error,errCode) OR on() vector(0)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -2979,7 +2831,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 59
+            "y": 18
           },
           "hiddenSeries": false,
           "id": 56,
@@ -3010,7 +2862,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_driver_net_write_errors{}[$__interval])) by (error,errCode) OR on() vector(0)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -3078,7 +2930,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 42
       },
       "id": 58,
       "panels": [
@@ -3100,7 +2952,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 44
+            "y": 3
           },
           "hiddenSeries": false,
           "id": 59,
@@ -3132,7 +2984,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__interval])) by (address))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__interval])) by (address)) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -3213,7 +3065,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 44
+            "y": 3
           },
           "hiddenSeries": false,
           "id": 84,
@@ -3340,7 +3192,7 @@
           "yaxes": [
             {
               "$$hashKey": "object:163",
-              "format": "ns",
+              "format": "s",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -3380,7 +3232,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 44
+            "y": 3
           },
           "hiddenSeries": false,
           "id": 90,
@@ -3411,7 +3263,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__interval])) by (address)",
+              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__interval])) by (address) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -3492,7 +3344,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 52
+            "y": 11
           },
           "hiddenSeries": false,
           "id": 140,
@@ -3523,7 +3375,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__interval])) by (method,success))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_address}_calls{success=~\"(true|false)\"}[$__interval])) by (method,success)) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{method}}, success={{success}}",
@@ -3604,7 +3456,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 52
+            "y": 11
           },
           "hiddenSeries": false,
           "id": 154,
@@ -3635,7 +3487,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_address}_value{success=~\"(true|false)\"}) by (address))",
+              "expr": "(sum(${prefix}_${metrics_with_address}_value{success=~\"(true|false)\"}) by (address)) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "",
@@ -3716,7 +3568,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 52
+            "y": 11
           },
           "hiddenSeries": false,
           "id": 70,
@@ -3748,7 +3600,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_${metrics_with_address}_errors{}[$__interval])) by (error,errCode) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
@@ -3823,7 +3675,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 43
       },
       "id": 86,
       "panels": [
@@ -3845,7 +3697,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 50
+            "y": 4
           },
           "hiddenSeries": false,
           "id": 87,
@@ -3876,7 +3728,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}[$__rate_interval])) by (nodeID))",
+              "expr": "(sum(rate(${prefix}_${metrics_with_nodeid}_calls{success=~\"(true|false)\"}[$__rate_interval])) by (nodeID) OR on() vector(0))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{nodeID}}",
@@ -3957,7 +3809,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 50
+            "y": 4
           },
           "hiddenSeries": false,
           "id": 88,
@@ -4077,7 +3929,7 @@
           "yaxes": [
             {
               "$$hashKey": "object:163",
-              "format": "ns",
+              "format": "s",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -4117,7 +3969,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 50
+            "y": 4
           },
           "hiddenSeries": false,
           "id": 71,
@@ -4148,7 +4000,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",nodeID!=\"wip\"}[$__interval])) by (nodeID)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__interval])) by (nodeID) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{address}}",
@@ -4228,120 +4080,8 @@
           "gridPos": {
             "h": 8,
             "w": 8,
-            "x": 0,
-            "y": 58
-          },
-          "hiddenSeries": false,
-          "id": 120,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "8.2.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_nodeid}_calls{nodeID!=\"\",success=~\"(true|false)\"}) by (nodeID))",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{nodeID}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Calls [total]",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transformations": [
-            {
-              "id": "groupBy",
-              "options": {
-                "fields": {
-                  "Time": {
-                    "aggregations": [],
-                    "operation": null
-                  }
-                }
-              }
-            }
-          ],
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:163",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:164",
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
             "x": 8,
-            "y": 58
+            "y": 12
           },
           "hiddenSeries": false,
           "id": 127,
@@ -4372,10 +4112,10 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "(sum(${prefix}_${metrics_with_nodeid}_value{nodeID!=\"\"}) by (nodeID))",
+              "expr": "(sum(${prefix}_${metrics_with_nodeid}_value{nodeID!=\"\"}) by (nodeID) OR on() vector(0))",
               "format": "time_series",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "value",
               "refId": "A"
             }
           ],
@@ -4453,7 +4193,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 58
+            "y": 12
           },
           "hiddenSeries": false,
           "id": 89,
@@ -4484,7 +4224,7 @@
           "targets": [
             {
               "exemplar": false,
-              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__interval])) by (error,errCode)",
+              "expr": "sum(rate(${prefix}_${metrics_with_nodeid}_errors{nodeID!=\"wip\"}[$__interval])) by (error,errCode) OR on() vector(0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{error}} [{{errCode}}]",
@@ -4584,12 +4324,12 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
-            "driver_cluster_get"
+            "driver_core_stream"
           ],
           "value": [
-            "driver_cluster_get"
+            "driver_core_stream"
           ]
         },
         "description": null,
@@ -4616,7 +4356,7 @@
             "value": "driver_core_invoke"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "driver_core_stream",
             "value": "driver_core_stream"
           },
@@ -4626,7 +4366,7 @@
             "value": "driver_cluster_pessimize"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "driver_cluster_get",
             "value": "driver_cluster_get"
           },
@@ -4664,14 +4404,12 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
-            "table_session_new",
-            "table_session_delete"
+            "table_session_query_stream_execute"
           ],
           "value": [
-            "table_session_new",
-            "table_session_delete"
+            "table_session_query_stream_execute"
           ]
         },
         "description": null,
@@ -4683,12 +4421,12 @@
         "name": "metrics_with_nodeid",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "table_session_new",
             "value": "table_session_new"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "table_session_delete",
             "value": "table_session_delete"
           },
@@ -4708,7 +4446,7 @@
             "value": "table_session_query_invoke_execute"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "table_session_query_stream_execute",
             "value": "table_session_query_stream_execute"
           },
@@ -4763,5 +4501,5 @@
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "trVqSG0nk",
-  "version": 3
+  "version": 6
 }

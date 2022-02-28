@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -26,6 +27,10 @@ import (
 )
 
 func init() {
+	log.SetFlags(0)
+	if os.Getenv("HIDE_APPLICATION_OUTPUT") == "1" {
+		log.SetOutput(ioutil.Discard)
+	}
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
@@ -46,7 +51,7 @@ func main() {
 		ydb.WithBalancer(balancers.RandomChoice()),
 		creds,
 		ydb.WithConnectionTTL(time.Second*5),
-		ydb.WithSessionPoolSizeLimit(10),
+		ydb.WithSessionPoolSizeLimit(80),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
 		metrics.WithTraces(
 			registry,
