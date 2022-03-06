@@ -113,7 +113,13 @@ func main() {
 				time.Sleep(time.Duration(rand.Int63n(int64(time.Second))))
 				inFlight.Add(1)
 				start := time.Now()
-				count, err := scanSelect(
+				var f func(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error)
+				if rand.Int31()%2 == 0 {
+					f = executeScanQuery
+				} else {
+					f = executeDataQuery
+				}
+				count, err := f(
 					ctx,
 					db.Table(),
 					db.Name(),
@@ -228,7 +234,7 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 	return nil
 }
 
-func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
+func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
 	var query = fmt.Sprintf(`
 		PRAGMA TablePathPrefix("%s");
 		SELECT
@@ -260,7 +266,7 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 				title *string
 				date  *time.Time
 			)
-			log.Printf("> select_simple_transaction:\n")
+			log.Printf("> execute scan query:\n")
 			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
 				for res.NextRow() {
 					count++
@@ -277,6 +283,66 @@ func scanSelect(ctx context.Context, c table.Client, prefix string, limit int64)
 			return res.Err()
 		},
 		table.WithIdempotent(),
+	)
+	return
+}
+
+func executeDataQuery(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
+	var (
+		query = fmt.Sprintf(`
+			PRAGMA TablePathPrefix("%s");
+			SELECT
+				series_id,
+				title,
+				release_date
+			FROM series LIMIT %d;`,
+			prefix,
+			limit,
+		)
+	)
+	err = c.DoTx(
+		ctx,
+		func(ctx context.Context, tx table.TransactionActor) error {
+			var res result.StreamResult
+			count = 0
+			res, err = tx.Execute(
+				ctx,
+				query,
+				table.NewQueryParameters(),
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				_ = res.Close()
+			}()
+			var (
+				id    *uint64
+				title *string
+				date  *time.Time
+			)
+			log.Printf("> execute data query:\n")
+			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
+				for res.NextRow() {
+					count++
+					err = res.Scan(&id, &title, &date)
+					if err != nil {
+						return err
+					}
+					log.Printf(
+						"  > %d %s %s\n",
+						*id, *title, *date,
+					)
+				}
+			}
+			return res.Err()
+		},
+		table.WithIdempotent(),
+		table.WithTxSettings(
+			table.TxSettings(
+				table.WithSerializableReadWrite(),
+			),
+		),
 	)
 	return
 }
