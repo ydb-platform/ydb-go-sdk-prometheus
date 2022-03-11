@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/ydb-platform/ydb-go-sdk-metrics"
+	metrics "github.com/ydb-platform/ydb-go-sdk-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
