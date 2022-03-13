@@ -42,9 +42,29 @@ type config struct {
 	namespace string
 
 	m          sync.Mutex
-	gauges     map[gaugeOpts]*gaugeVec
-	timers     map[timerOpts]*timerVec
-	histograms map[histogramsOpts]*histogramVec
+	counters   map[metricKey]*counterVec
+	gauges     map[metricKey]*gaugeVec
+	timers     map[metricKey]*timerVec
+	histograms map[metricKey]*histogramVec
+}
+
+func (c *config) CounterVec(name string, labelNames ...string) registry.CounterVec {
+	opts := prometheus.CounterOpts{
+		Namespace: c.namespace,
+		Name:      name,
+	}
+	counterOpts := newCounterOpts(opts)
+	c.m.Lock()
+	defer c.m.Unlock()
+	if cnt, ok := c.counters[counterOpts]; ok {
+		return cnt
+	}
+	cnt := &counterVec{c: prometheus.NewCounterVec(opts, labelNames)}
+	if err := c.registry.Register(cnt.c); err != nil {
+		panic(err)
+	}
+	c.counters[counterOpts] = cnt
+	return cnt
 }
 
 func (c *config) join(a, b string) string {
@@ -63,42 +83,38 @@ func (c *config) WithSystem(subsystem string) registry.Config {
 		details:    c.details,
 		registry:   c.registry,
 		namespace:  c.join(c.namespace, subsystem),
-		gauges:     make(map[gaugeOpts]*gaugeVec),
-		timers:     make(map[timerOpts]*timerVec),
-		histograms: make(map[histogramsOpts]*histogramVec),
+		counters:   make(map[metricKey]*counterVec),
+		gauges:     make(map[metricKey]*gaugeVec),
+		timers:     make(map[metricKey]*timerVec),
+		histograms: make(map[metricKey]*histogramVec),
 	}
 }
 
-type gaugeOpts struct {
+type metricKey struct {
 	Namespace string
 	Subsystem string
 	Name      string
+	Buckets   string
 }
 
-func newGaugeOpts(opts prometheus.GaugeOpts) gaugeOpts {
-	return gaugeOpts{
+func newCounterOpts(opts prometheus.CounterOpts) metricKey {
+	return metricKey{
 		Namespace: opts.Namespace,
 		Subsystem: opts.Subsystem,
 		Name:      opts.Name,
 	}
 }
 
-type histogramsOpts struct {
-	Namespace string
-	Subsystem string
-	Name      string
-	Buckets   string
+func newGaugeOpts(opts prometheus.GaugeOpts) metricKey {
+	return metricKey{
+		Namespace: opts.Namespace,
+		Subsystem: opts.Subsystem,
+		Name:      opts.Name,
+	}
 }
 
-type timerOpts struct {
-	Namespace string
-	Subsystem string
-	Name      string
-	Buckets   string
-}
-
-func newHistogramOpts(opts prometheus.HistogramOpts) histogramsOpts {
-	return histogramsOpts{
+func newHistogramOpts(opts prometheus.HistogramOpts) metricKey {
+	return metricKey{
 		Namespace: opts.Namespace,
 		Subsystem: opts.Subsystem,
 		Name:      opts.Name,
@@ -106,13 +122,25 @@ func newHistogramOpts(opts prometheus.HistogramOpts) histogramsOpts {
 	}
 }
 
-func newTimerOpts(opts prometheus.HistogramOpts) timerOpts {
-	return timerOpts{
+func newTimerOpts(opts prometheus.HistogramOpts) metricKey {
+	return metricKey{
 		Namespace: opts.Namespace,
 		Subsystem: opts.Subsystem,
 		Name:      opts.Name,
 		Buckets:   fmt.Sprintf("%v", opts.Buckets),
 	}
+}
+
+type counterVec struct {
+	c *prometheus.CounterVec
+}
+
+func (c *counterVec) With(labels map[string]string) registry.Counter {
+	cnt, err := c.c.GetMetricWith(labels)
+	if err != nil {
+		panic(err)
+	}
+	return cnt
 }
 
 type gaugeVec struct {
