@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1646521574890,
+  "iteration": 1647155382600,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -376,15 +376,6 @@
           "interval": "",
           "legendFormat": "Balancer",
           "refId": "C"
-        },
-        {
-          "exemplar": false,
-          "expr": "(sum(${prefix}_driver_core_repeater_calls{success=\"wip\"}) or on() vector(0))-(sum(${prefix}_driver_core_repeater_calls{success!=\"wip\"}) or on() vector(0))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "Repeater InFlight",
-          "refId": "D"
         }
       ],
       "thresholds": [],
@@ -485,7 +476,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum by (nodeID) (${prefix}_table_session_new_calls{success=\"true\"})) - (sum by (nodeID) (${prefix}_table_session_delete_calls{success=\"wip\"}) or on() vector(0))",
+          "expr": "(sum by (nodeID) (${prefix}_table_session_new_calls{success=\"true\"})) - (sum by (nodeID) (${prefix}_table_session_delete_calls{success=\"wip\"}) or absent(sum by (nodeID) (${prefix}_table_session_delete_calls{success=\"wip\"}) ))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -672,7 +663,7 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "links": []
         },
         "overrides": []
       },
@@ -685,19 +676,19 @@
         "y": 10
       },
       "hiddenSeries": false,
-      "id": 91,
+      "id": 237,
       "legend": {
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
-        "show": true,
+        "show": false,
         "total": false,
         "values": false
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null",
+      "nullPointMode": "null as zero",
       "options": {
         "alertThreshold": true
       },
@@ -708,43 +699,44 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"online\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"online\"}) or on() vector(0))",
+          "exemplar": false,
+          "expr": "sum by (method,success)(rate(${prefix}_driver_repeater_calls{success!=\"wip\",name=\"discovery\"}[1s]))",
+          "format": "time_series",
+          "hide": false,
           "interval": "",
-          "legendFormat": "online",
+          "legendFormat": "Repeater {{method}} => {{success}}",
           "refId": "A"
         },
         {
-          "exemplar": true,
-          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"offline\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"offline\"}) or on() vector(0))",
+          "exemplar": false,
+          "expr": "sum by (success)(rate(${prefix}_discovery_calls{success!=\"wip\"}[1s]))",
+          "format": "time_series",
           "hide": false,
           "interval": "",
-          "legendFormat": "offline",
+          "legendFormat": "Discovery => {{success}}",
           "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"banned\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"banned\"}) or on() vector(0))",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "banned",
-          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Connections state",
+      "title": "Discovery",
       "tooltip": {
         "shared": true,
         "sort": 0,
         "value_type": "individual"
       },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {}
+        }
+      ],
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -755,16 +747,16 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:224",
+          "$$hashKey": "object:163",
           "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
-          "$$hashKey": "object:225",
+          "$$hashKey": "object:164",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -1014,7 +1006,7 @@
         },
         "overrides": []
       },
-      "fill": 4,
+      "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
@@ -1023,7 +1015,7 @@
         "y": 18
       },
       "hiddenSeries": false,
-      "id": 92,
+      "id": 238,
       "legend": {
         "avg": false,
         "current": false,
@@ -1035,7 +1027,7 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null",
+      "nullPointMode": "null as zero",
       "options": {
         "alertThreshold": true
       },
@@ -1046,24 +1038,24 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
           "exemplar": false,
-          "expr": "(sum by (address)(${prefix}_driver_net_dial_calls{success=\"true\"})) - (sum by (address)(${prefix}_driver_net_close_calls{success=\"true\"}) or absent(${prefix}_driver_net_close_calls{success=\"true\"}))",
+          "expr": "sum by (method,success)(rate(${prefix}_driver_conn_park_calls{success!=\"wip\"}[1s]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{address}}",
-          "refId": "B"
+          "legendFormat": "Park => {{success}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Connections on-line",
+      "title": "Connections Parking",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1090,7 +1082,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -1461,13 +1453,13 @@
         "y": 26
       },
       "hiddenSeries": false,
-      "id": 93,
+      "id": 91,
       "legend": {
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
-        "show": false,
+        "show": true,
         "total": false,
         "values": false
       },
@@ -1489,23 +1481,38 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ydb_go_sdk_driver_conn_usages_value) by (address)",
+          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"online\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"online\"}) or on() vector(0))",
           "interval": "",
-          "legendFormat": "{{address}}",
+          "legendFormat": "online",
           "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"offline\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"offline\"}) or on() vector(0))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "offline",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "(sum(${prefix}_driver_conn_state_calls{success!=\"wip\",state=\"banned\"}) or on() vector(0)) - (sum(${prefix}_driver_conn_state_calls{success=\"wip\",state=\"banned\"}) or on() vector(0))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "banned",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Connections usage",
+      "title": "Connections state",
       "tooltip": {
         "shared": true,
         "sort": 0,
         "value_type": "individual"
       },
-      "transformations": [],
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -1516,7 +1523,7 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:399",
+          "$$hashKey": "object:224",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -1525,7 +1532,7 @@
           "show": true
         },
         {
-          "$$hashKey": "object:400",
+          "$$hashKey": "object:225",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -1775,16 +1782,16 @@
         },
         "overrides": []
       },
-      "fill": 1,
+      "fill": 4,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 8,
         "x": 0,
         "y": 34
       },
       "hiddenSeries": false,
-      "id": 189,
+      "id": 92,
       "legend": {
         "avg": false,
         "current": false,
@@ -1796,7 +1803,7 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null as zero",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -1807,23 +1814,24 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": false,
+      "stack": true,
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "(sum by (success)(changes(${prefix}_table_do_calls{success!=\"wip\"}[$__interval])))",
+          "exemplar": false,
+          "expr": "(sum by (address)(${prefix}_driver_net_dial_calls{success=\"true\"})) - (sum by (address)(${prefix}_driver_net_close_calls{success=\"true\"}) or absent(${prefix}_driver_net_close_calls{success=\"true\"}))",
           "format": "time_series",
+          "hide": false,
           "interval": "",
-          "legendFormat": "Success: {{success}}",
-          "refId": "A"
+          "legendFormat": "{{address}}",
+          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Table Do Calls",
+      "title": "Connections on-line",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1832,171 +1840,9 @@
       "transformations": [
         {
           "id": "groupBy",
-          "options": {
-            "fields": {
-              "Time": {
-                "aggregations": [],
-                "operation": null
-              }
-            }
-          }
+          "options": {}
         }
       ],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:163",
-          "format": "reqps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:164",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 34
-      },
-      "hiddenSeries": false,
-      "id": 190,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p99",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p95",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.90, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p90",
-          "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.75, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p75",
-          "refId": "D"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.50, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p50",
-          "refId": "E"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.25, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p25",
-          "refId": "F"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.10, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p10",
-          "refId": "G"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Table Do Attempts",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [],
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -2293,7 +2139,7 @@
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "links": []
+          "unit": "short"
         },
         "overrides": []
       },
@@ -2301,12 +2147,12 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 8,
         "x": 0,
         "y": 42
       },
       "hiddenSeries": false,
-      "id": 227,
+      "id": 93,
       "legend": {
         "avg": false,
         "current": false,
@@ -2318,7 +2164,7 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null as zero",
+      "nullPointMode": "null",
       "options": {
         "alertThreshold": true
       },
@@ -2329,15 +2175,14 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": false,
+      "stack": true,
       "steppedLine": false,
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum by (success)(changes(${prefix}_table_do_tx_calls{success!=\"wip\"}[$__interval])))",
-          "format": "time_series",
+          "expr": "sum(ydb_go_sdk_driver_conn_usages_value) by (address)",
           "interval": "",
-          "legendFormat": "Success: {{success}}",
+          "legendFormat": "{{address}}",
           "refId": "A"
         }
       ],
@@ -2345,174 +2190,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Table DoTx Calls",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "Time": {
-                "aggregations": [],
-                "operation": null
-              }
-            }
-          }
-        }
-      ],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:163",
-          "format": "reqps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:164",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 42
-      },
-      "hiddenSeries": false,
-      "id": 228,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p99",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p95",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.90, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p90",
-          "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.75, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p75",
-          "refId": "D"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.50, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p50",
-          "refId": "E"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.25, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p25",
-          "refId": "F"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.10, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "p10",
-          "refId": "G"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Table DoTx Attempts",
+      "title": "Connections usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2529,7 +2207,7 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:163",
+          "$$hashKey": "object:399",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -2538,7 +2216,7 @@
           "show": true
         },
         {
-          "$$hashKey": "object:164",
+          "$$hashKey": "object:400",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -2808,13 +2486,547 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 50
+      },
+      "hiddenSeries": false,
+      "id": 189,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum by (success)(changes(${prefix}_table_do_calls{success!=\"wip\"}[$__interval])))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "Success: {{success}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Table Do Calls",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 50
+      },
+      "hiddenSeries": false,
+      "id": 190,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p99",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p90",
+          "refId": "C"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.75, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p75",
+          "refId": "D"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p50",
+          "refId": "E"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.25, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p25",
+          "refId": "F"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(changes(${prefix}_table_do_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p10",
+          "refId": "G"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Table Do Attempts",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 58
+      },
+      "hiddenSeries": false,
+      "id": 227,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "(sum by (success)(changes(${prefix}_table_do_tx_calls{success!=\"wip\"}[$__interval])))",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "Success: {{success}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Table DoTx Calls",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [],
+                "operation": null
+              }
+            }
+          }
+        }
+      ],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 58
+      },
+      "hiddenSeries": false,
+      "id": 228,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p99",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p90",
+          "refId": "C"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.75, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p75",
+          "refId": "D"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p50",
+          "refId": "E"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.25, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p25",
+          "refId": "F"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(changes(${prefix}_table_do_tx_value_bucket[$__rate_interval])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "p10",
+          "refId": "G"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Table DoTx Attempts",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:163",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:164",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "collapsed": true,
       "datasource": "Prometheus",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 66
       },
       "id": 47,
       "panels": [
@@ -3796,7 +4008,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 67
       },
       "id": 58,
       "panels": [
@@ -4529,7 +4741,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 68
       },
       "id": 86,
       "panels": [
@@ -5180,11 +5392,13 @@
         "current": {
           "selected": true,
           "text": [
-            "driver_repeater",
+            "driver_core_conn_close",
+            "driver_core_repeater",
             "discovery"
           ],
           "value": [
-            "driver_repeater",
+            "driver_core_conn_close",
+            "driver_core_repeater",
             "discovery"
           ]
         },
@@ -5262,7 +5476,7 @@
             "value": "driver_cluster_remove"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "driver_repeater",
             "value": "driver_repeater"
           },
@@ -5280,7 +5494,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "table_session_keep_alive",
             "table_session_query_stream_execute"
@@ -5379,5 +5593,5 @@
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "trVqSG0nk",
-  "version": 16
+  "version": 17
 }

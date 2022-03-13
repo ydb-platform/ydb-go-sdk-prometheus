@@ -50,7 +50,8 @@ func main() {
 		ydb.WithDialTimeout(15*time.Second),
 		ydb.WithBalancer(balancers.RandomChoice()),
 		creds,
-		ydb.WithConnectionTTL(time.Second*5),
+		ydb.WithConnectionTTL(10*time.Second),
+		ydb.WithDiscoveryInterval(5*time.Second),
 		ydb.WithSessionPoolSizeLimit(80),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
 		metrics.WithTraces(
