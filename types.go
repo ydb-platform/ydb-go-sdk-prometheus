@@ -18,20 +18,20 @@ const (
 
 var (
 	defaultTimerBuckets = []float64{
-		float64(5*time.Millisecond) / float64(time.Second),
-		float64(10*time.Millisecond) / float64(time.Second),
-		float64(25*time.Millisecond) / float64(time.Second),
-		float64(50*time.Millisecond) / float64(time.Second),
-		float64(100*time.Millisecond) / float64(time.Second),
-		float64(250*time.Millisecond) / float64(time.Second),
-		float64(500*time.Millisecond) / float64(time.Second),
-		float64(1000*time.Millisecond) / float64(time.Second),
-		float64(2500*time.Millisecond) / float64(time.Second),
-		float64(5000*time.Millisecond) / float64(time.Second),
-		float64(10000*time.Millisecond) / float64(time.Second),
-		float64(25000*time.Millisecond) / float64(time.Second),
-		float64(50000*time.Millisecond) / float64(time.Second),
-		float64(100000*time.Millisecond) / float64(time.Second),
+		(5 * time.Millisecond).Seconds(),
+		(10 * time.Millisecond).Seconds(),
+		(25 * time.Millisecond).Seconds(),
+		(50 * time.Millisecond).Seconds(),
+		(100 * time.Millisecond).Seconds(),
+		(250 * time.Millisecond).Seconds(),
+		(500 * time.Millisecond).Seconds(),
+		(1000 * time.Millisecond).Seconds(),
+		(2500 * time.Millisecond).Seconds(),
+		(5000 * time.Millisecond).Seconds(),
+		(10000 * time.Millisecond).Seconds(),
+		(25000 * time.Millisecond).Seconds(),
+		(50000 * time.Millisecond).Seconds(),
+		(100000 * time.Millisecond).Seconds(),
 	}
 )
 
