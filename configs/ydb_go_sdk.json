@@ -24,7 +24,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1647199688853,
+  "iteration": 1647997640183,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -596,6 +596,15 @@
           "interval": "",
           "legendFormat": "{{address}}",
           "refId": "B"
+        },
+        {
+          "exemplar": false,
+          "expr": "",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{address}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -916,7 +925,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "(sum by (nodeID) (${prefix}_table_session_new_calls{success=\"true\"}) - (sum by (nodeID) (${prefix}_table_session_delete_calls{success=\"wip\"}) or absent(${prefix}_table_session_delete_calls{success=\"wip\"})))",
+          "expr": "(sum by (nodeID) (${prefix}_table_session_new_calls{success=\"true\"})) - (sum by (nodeID) (${prefix}_table_session_delete_calls{success=\"wip\",nodeID!=\"\"}) or absent(${prefix}_table_session_delete_calls{success=\"wip\",nodeID!=\"\"}))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -936,8 +945,10 @@
       },
       "transformations": [
         {
-          "id": "groupBy",
-          "options": {}
+          "id": "labelsToFields",
+          "options": {
+            "valueLabel": "nodeID"
+          }
         }
       ],
       "type": "graph",
@@ -3935,7 +3946,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 4
+            "y": 52
           },
           "hiddenSeries": false,
           "id": 59,
@@ -4036,7 +4047,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 4
+            "y": 52
           },
           "hiddenSeries": false,
           "id": 84,
@@ -4203,7 +4214,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 4
+            "y": 52
           },
           "hiddenSeries": false,
           "id": 90,
@@ -4315,7 +4326,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 12
+            "y": 60
           },
           "hiddenSeries": false,
           "id": 140,
@@ -4427,7 +4438,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 12
+            "y": 60
           },
           "hiddenSeries": false,
           "id": 154,
@@ -4539,7 +4550,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 12
+            "y": 60
           },
           "hiddenSeries": false,
           "id": 70,
@@ -4646,7 +4657,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 52
+        "y": 53
       },
       "id": 86,
       "panels": [
@@ -4668,7 +4679,7 @@
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 13
+            "y": 5
           },
           "hiddenSeries": false,
           "id": 87,
@@ -4780,7 +4791,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 13
+            "y": 5
           },
           "hiddenSeries": false,
           "id": 88,
@@ -4940,7 +4951,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 13
+            "y": 5
           },
           "hiddenSeries": false,
           "id": 71,
@@ -5052,7 +5063,7 @@
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 21
+            "y": 13
           },
           "hiddenSeries": false,
           "id": 127,
@@ -5164,7 +5175,7 @@
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 21
+            "y": 13
           },
           "hiddenSeries": false,
           "id": 89,
@@ -5297,14 +5308,12 @@
         "current": {
           "selected": true,
           "text": [
-            "driver_core_conn_close",
-            "driver_core_repeater",
-            "discovery"
+            "discovery",
+            "driver_repeater"
           ],
           "value": [
-            "driver_core_conn_close",
-            "driver_core_repeater",
-            "discovery"
+            "discovery",
+            "driver_repeater"
           ]
         },
         "description": null,
@@ -5381,7 +5390,7 @@
             "value": "driver_cluster_remove"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "driver_repeater",
             "value": "driver_repeater"
           },
@@ -5401,12 +5410,10 @@
         "current": {
           "selected": true,
           "text": [
-            "table_session_keep_alive",
-            "table_session_query_stream_execute"
+            "table_session_new"
           ],
           "value": [
-            "table_session_keep_alive",
-            "table_session_query_stream_execute"
+            "table_session_new"
           ]
         },
         "description": null,
@@ -5418,7 +5425,7 @@
         "name": "metrics_with_nodeid",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "table_session_new",
             "value": "table_session_new"
           },
@@ -5428,7 +5435,7 @@
             "value": "table_session_delete"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "table_session_keep_alive",
             "value": "table_session_keep_alive"
           },
@@ -5443,7 +5450,7 @@
             "value": "table_session_query_invoke_execute"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "table_session_query_stream_execute",
             "value": "table_session_query_stream_execute"
           },
@@ -5498,5 +5505,5 @@
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "trVqSG0nk",
-  "version": 18
+  "version": 19
 }

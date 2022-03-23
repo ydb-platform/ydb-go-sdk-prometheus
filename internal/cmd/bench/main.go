@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -52,8 +53,11 @@ func main() {
 		creds,
 		ydb.WithConnectionTTL(10*time.Second),
 		ydb.WithDiscoveryInterval(5*time.Second),
-		ydb.WithSessionPoolSizeLimit(80),
+		ydb.WithSessionPoolSizeLimit(50),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
+		ydb.With(
+			config.WithInternalDNSResolver(),
+		),
 		metrics.WithTraces(
 			registry,
 			metrics.WithSeparator("_"),
