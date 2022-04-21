@@ -13,9 +13,9 @@ import (
     // init prometheus registry
 	registry := prometheus.NewRegistry()
 
-	db, err := ydb.New(
+	db, err := ydb.Open(
 		ctx,
-		ydb.MustConnectionString(connection),
+        os.Getenv("YDB_CONNECTION_STRING"),
 		ydbPrometheus.WithTraces(registry),
 	)
 

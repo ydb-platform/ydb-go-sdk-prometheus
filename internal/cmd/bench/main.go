@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ydb-platform/ydb-go-sdk/v3/config"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -45,9 +46,9 @@ func main() {
 		creds = ydb.WithAnonymousCredentials()
 	}
 	registry := prometheus.NewRegistry()
-	db, err := ydb.New(
+	db, err := ydb.Open(
 		ctx,
-		ydb.WithConnectionString(os.Getenv("YDB_CONNECTION_STRING")),
+		os.Getenv("YDB_CONNECTION_STRING"),
 		ydb.WithDialTimeout(15*time.Second),
 		ydb.WithBalancer(balancers.RandomChoice()),
 		creds,
@@ -272,10 +273,14 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 				date  *time.Time
 			)
 			log.Printf("> execute scan query:\n")
-			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
+			for res.NextResultSet(ctx) {
 				for res.NextRow() {
 					count++
-					err = res.Scan(&id, &title, &date)
+					err = res.ScanNamed(
+						named.Optional("series_id", &id),
+						named.Optional("title", &title),
+						named.Optional("release_date", &date),
+					)
 					if err != nil {
 						return err
 					}
