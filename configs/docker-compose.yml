@@ -66,3 +66,20 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+
+  ydb:
+    image: cr.yandex/yc/yandex-docker-local-ydb:latest
+    container_name: local-ydb
+    hostname: localhost
+    environment:
+      - GRPC_TLS_PORT=2135
+      - GRPC_PORT=2136
+      - MON_PORT=8765
+      - YDB_USE_IN_MEMORY_PDISKS=true
+      - YDB_DEFAULT_LOG_LEVEL=NOTICE
+    ports:
+      - "2136:2136"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
