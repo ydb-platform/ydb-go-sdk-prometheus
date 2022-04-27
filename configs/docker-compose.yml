@@ -69,7 +69,7 @@ services:
 
   ydb:
     image: cr.yandex/yc/yandex-docker-local-ydb:latest
-    container_name: local-ydb
+    container_name: ydb-local
     hostname: localhost
     environment:
       - GRPC_TLS_PORT=2135
