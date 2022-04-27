@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/ydb-platform/ydb-go-sdk/v3/config"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -23,6 +21,7 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
@@ -38,30 +37,28 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	var creds ydb.Option
-	if token, has := os.LookupEnv("YDB_ACCESS_TOKEN_CREDENTIALS"); has {
-		creds = ydb.WithAccessTokenCredentials(token)
-	}
-	if v, has := os.LookupEnv("YDB_ANONYMOUS_CREDENTIALS"); has && v == "1" {
-		creds = ydb.WithAnonymousCredentials()
-	}
 	registry := prometheus.NewRegistry()
 	db, err := ydb.Open(
 		ctx,
 		os.Getenv("YDB_CONNECTION_STRING"),
 		ydb.WithDialTimeout(15*time.Second),
 		ydb.WithBalancer(balancers.RandomChoice()),
-		creds,
+		ydb.WithAccessTokenCredentials(os.Getenv("YDB_ACCESS_TOKEN_CREDENTIALS")),
 		ydb.WithConnectionTTL(10*time.Second),
-		ydb.WithDiscoveryInterval(5*time.Second),
 		ydb.WithSessionPoolSizeLimit(50),
+		ydb.WithDiscoveryInterval(5*time.Minute),
+		ydb.WithConnectionTTL(5*time.Second),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		ydb.With(
-			config.WithInternalDNSResolver(),
-		),
 		metrics.WithTraces(
 			registry,
 			metrics.WithSeparator("_"),
+			//metrics.WithDetails(trace.TableSessionQueryStreamEvents|
+			//	trace.TableSessionQueryInvokeEvents|
+			//	trace.DriverClusterEvents|
+			//	trace.DriverRepeaterEvents|
+			//	trace.TablePoolLifeCycleEvents|
+			//	trace.TablePoolSessionLifeCycleEvents,
+			//),
 		),
 	)
 	if err != nil {
@@ -92,7 +89,7 @@ func main() {
 		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil && concurrency > 0 {
 			return concurrency
 		}
-		return 300
+		return 50
 	}()
 
 	wg.Add(concurrency)
@@ -120,16 +117,19 @@ func main() {
 				inFlight.Add(1)
 				start := time.Now()
 				var f func(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error)
-				if rand.Int31()%2 == 0 {
-					f = executeScanQuery
-				} else {
+				switch rand.Int31() % 3 {
+				case 0:
 					f = executeDataQuery
+				case 1:
+					f = executeScanQuery
+				case 2:
+					f = streamReadTable
 				}
 				count, err := f(
 					ctx,
 					db.Table(),
 					db.Name(),
-					rand.Int63n(25000),
+					10000000, //rand.Int63n(25000),
 				)
 				inFlight.Add(-1)
 				success := map[string]string{
@@ -256,6 +256,7 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 		func(ctx context.Context, s table.Session) error {
 			var res result.StreamResult
 			count = 0
+			start := time.Now()
 			res, err = s.StreamExecuteScanQuery(
 				ctx,
 				query,
@@ -266,6 +267,59 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 			}
 			defer func() {
 				_ = res.Close()
+				if time.Since(start) > time.Minute {
+					fmt.Println(count)
+				}
+			}()
+			var (
+				id    *uint64
+				title *string
+				date  *time.Time
+			)
+			log.Printf("> execute scan query:\n")
+			for res.NextResultSet(ctx) {
+				for res.NextRow() {
+					count++
+					err = res.ScanNamed(
+						named.Optional("series_id", &id),
+						named.Optional("title", &title),
+						named.Optional("release_date", &date),
+					)
+					if err != nil {
+						return err
+					}
+					log.Printf(
+						"  > %d %s %s\n",
+						*id, *title, *date,
+					)
+				}
+			}
+			return res.Err()
+		},
+		table.WithIdempotent(),
+	)
+	return
+}
+
+func streamReadTable(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
+	err = c.Do(
+		ctx,
+		func(ctx context.Context, s table.Session) error {
+			var res result.StreamResult
+			count = 0
+			start := time.Now()
+			res, err = s.StreamReadTable(
+				ctx,
+				path.Join(prefix, "series"),
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				_ = res.Close()
+				if time.Since(start) > time.Minute {
+					fmt.Println(count)
+				}
 			}()
 			var (
 				id    *uint64
