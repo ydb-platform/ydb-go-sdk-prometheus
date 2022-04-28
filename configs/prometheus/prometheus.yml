@@ -1,6 +1,6 @@
 global:
-  scrape_interval:     15s
-  evaluation_interval: 15s
+  scrape_interval:     1s
+  evaluation_interval: 1s
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
@@ -14,6 +14,6 @@ rule_files:
 # A scrape configuration containing exactly one endpoint to scrape.
 scrape_configs:
   - job_name: 'ydb-go-sdk'
-    scrape_interval: 100ms
+    scrape_interval: 1s
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['prompush:9091']

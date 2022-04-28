@@ -30,6 +30,16 @@ services:
     labels:
       org.label-schema.group: "monitoring"
 
+  prompush:
+    image: prom/pushgateway
+    container_name: prompush
+    expose:
+      - 9091
+    ports:
+      - "8080:9091"
+    networks:
+      - monitor-net
+
   grafana:
     image: grafana/grafana:8.2.1
     container_name: grafana
