@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,9 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/ydb-platform/ydb-go-sdk/v3/config"
+	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/balancers"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
@@ -27,6 +30,11 @@ import (
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
+// flags
+var (
+	prometheusPushUrl = flag.String("prom-push-url", "http://localhost:8080", "Push url for prometheus metrics, set to 'off' for disable")
+)
+
 func init() {
 	log.SetFlags(0)
 	if os.Getenv("HIDE_APPLICATION_OUTPUT") == "1" {
@@ -36,8 +44,11 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	ctx := context.Background()
 	registry := prometheus.NewRegistry()
+
 	db, err := ydb.Open(
 		ctx,
 		os.Getenv("YDB_CONNECTION_STRING"),
@@ -68,9 +79,7 @@ func main() {
 		_ = db.Close(ctx)
 	}()
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go httpServe(wg, os.Getenv("PORT"), registry)
+	go promPusher(registry)
 
 	errs := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
@@ -92,6 +101,7 @@ func main() {
 		return 50
 	}()
 
+	wg := &sync.WaitGroup{}
 	wg.Add(concurrency)
 
 	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -153,13 +163,20 @@ func main() {
 	wg.Wait()
 }
 
-func httpServe(wg *sync.WaitGroup, port string, registry *prometheus.Registry) {
-	defer wg.Done()
-	time.Sleep(time.Second)
-	http.Handle("/metrics", promhttp.InstrumentMetricHandler(
-		registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
-	))
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+func promPusher(registry prometheus.Gatherer) {
+	if *prometheusPushUrl == "off" {
+		return
+	}
+
+	pusher := push.New(*prometheusPushUrl, "ydb-go-sdk")
+	pusher.Gatherer(registry)
+	for {
+		time.Sleep(time.Second)
+		if err := pusher.Push(); err != nil {
+			log.Printf("Push error: %+v", err)
+		}
+	}
+
 }
 
 func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
