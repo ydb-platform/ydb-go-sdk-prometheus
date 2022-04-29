@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/push"
-	"github.com/ydb-platform/ydb-go-sdk/v3/config"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,7 +23,6 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
@@ -95,7 +93,7 @@ func main() {
 	}
 
 	concurrency := func() int {
-		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil && concurrency > 0 {
+		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err == nil && concurrency > 0 {
 			return concurrency
 		}
 		return 50
