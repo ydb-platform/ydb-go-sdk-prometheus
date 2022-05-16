@@ -14,11 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/push"
-	"github.com/ydb-platform/ydb-go-sdk/v3/config"
-	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
-
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/balancers"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
@@ -28,6 +23,9 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/push"
 )
 
 // flags
