@@ -417,11 +417,6 @@ func executeDataQuery(ctx context.Context, c table.Client, prefix string, limit 
 			return res.Err()
 		},
 		table.WithIdempotent(),
-		table.WithTxSettings(
-			table.TxSettings(
-				table.WithSerializableReadWrite(),
-			),
-		),
 	)
 	return
 }
