@@ -1,13 +1,12 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	metrics "github.com/ydb-platform/ydb-go-sdk-metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
 // DatabaseSQL makes trace.DatabaseSQL with core metrics publishing
-func DatabaseSQL(registry coreMetrics.Registry, opts ...option) trace.Table {
+func DatabaseSQL(registry coreMetrics.Registry, opts ...option) trace.DatabaseSQL {
 	c := &config{
 		registry:  registry,
 		namespace: defaultNamespace,
@@ -22,4 +21,3 @@ func DatabaseSQL(registry coreMetrics.Registry, opts ...option) trace.Table {
 	}
 	return metrics.DatabaseSQL(c)
 }
-
