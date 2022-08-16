@@ -2,14 +2,12 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-
-	"github.com/ydb-platform/ydb-go-sdk/v3"
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
-
 	metrics "github.com/ydb-platform/ydb-go-sdk-metrics"
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
-func WithTraces(registry prometheus.Registerer, opts ...option) ydb.Option {
+// DatabaseSQL makes trace.DatabaseSQL with core metrics publishing
+func DatabaseSQL(registry coreMetrics.Registry, opts ...option) trace.Table {
 	c := &config{
 		registry:  registry,
 		namespace: defaultNamespace,
@@ -18,8 +16,10 @@ func WithTraces(registry prometheus.Registerer, opts ...option) ydb.Option {
 	for _, o := range opts {
 		o(c)
 	}
+
 	if c.details == 0 {
 		c.details = trace.DetailsAll
 	}
-	return metrics.WithTraces(c)
+	return metrics.DatabaseSQL(c)
 }
+
