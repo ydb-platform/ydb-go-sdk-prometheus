@@ -58,17 +58,7 @@ func main() {
 		ydb.WithDiscoveryInterval(5*time.Minute),
 		ydb.WithConnectionTTL(5*time.Second),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		metrics.WithTraces(
-			registry,
-			metrics.WithSeparator("_"),
-			//metrics.WithDetails(trace.TableSessionQueryStreamEvents|
-			//	trace.TableSessionQueryInvokeEvents|
-			//	trace.DriverClusterEvents|
-			//	trace.DriverRepeaterEvents|
-			//	trace.TablePoolLifeCycleEvents|
-			//	trace.TablePoolSessionLifeCycleEvents,
-			//),
-		),
+		metrics.WithTraces(registry, metrics.WithSeparator("_")),
 	)
 	if err != nil {
 		panic(err)

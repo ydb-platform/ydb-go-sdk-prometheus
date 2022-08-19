@@ -230,6 +230,10 @@ github.com/ydb-platform/ydb-go-sdk-metrics v0.16.0 h1:6/PRBX299SIVoSnKrsrVLM4SfL
 github.com/ydb-platform/ydb-go-sdk-metrics v0.16.0/go.mod h1:pKfWaA6ydwKYNhIw4zwAnCm/PjIuljgkdi6x5Ueuyms=
 github.com/ydb-platform/ydb-go-sdk-metrics v0.16.1 h1:cZzcb6lXLUFhE77hdheALse+8gSKskmJ7mMoRsUukWs=
 github.com/ydb-platform/ydb-go-sdk-metrics v0.16.1/go.mod h1:pKfWaA6ydwKYNhIw4zwAnCm/PjIuljgkdi6x5Ueuyms=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.2 h1:Fp7+m8KdZOKGPf9h1n9IQgGVyHdAIh3PHx7vDLhYeCE=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.2/go.mod h1:UOBZLV82XHl7z7jxbv4w7r/9kDEYmf17S4xL5UolN9o=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.3 h1:30D5jErLAiGjchVG2D9JiCLbST5LpAiyS7DoUtHkWsU=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.3/go.mod h1:bqOjIBSt5LtA8fcTprRPGLvlQGkNlqBSRqnL+yZUJh4=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.24.0/go.mod h1:/KCidORSzHOsn+j46Iqb8Tf6UXNhPWRMcrMieh+i9Xw=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.24.1 h1:hQScp5tDbmSIUe7QKLm++m2chLhqcmD04zXCcYbJwjU=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.24.1/go.mod h1:/KCidORSzHOsn+j46Iqb8Tf6UXNhPWRMcrMieh+i9Xw=
@@ -243,6 +247,10 @@ github.com/ydb-platform/ydb-go-sdk/v3 v3.33.0 h1:QFnPdbWa/Qyzm5OPjANdFpwna0ZV07E
 github.com/ydb-platform/ydb-go-sdk/v3 v3.33.0/go.mod h1:Fc5/F1O8RidZ1XcOSGMKZytR5G9Sad2QwJ+Z8y0u4Ts=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.34.0 h1:qBbCMkvn/Uz1AVs7icKg7Y6e/znkQXkjZHwminjiz9A=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.34.0/go.mod h1:eD5OyVA8MuMq3+BYBMKGUfa2faTZhbx+LE+y1RgitFE=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.35.0 h1:XqQD0ROYazZqu1f01ykQ4q45PIEAQvzSqemkukOnwDU=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.35.0/go.mod h1:eD5OyVA8MuMq3+BYBMKGUfa2faTZhbx+LE+y1RgitFE=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.35.1 h1:+DTSx1uMFMtNHEpC1ZyM6t2vaBQCnymqHV1+/abZDWM=
+github.com/ydb-platform/ydb-go-sdk/v3 v3.35.1/go.mod h1:eD5OyVA8MuMq3+BYBMKGUfa2faTZhbx+LE+y1RgitFE=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
