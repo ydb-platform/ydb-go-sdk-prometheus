@@ -21,6 +21,7 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result/named"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
+	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 
 	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 
@@ -58,7 +59,7 @@ func main() {
 		ydb.WithDiscoveryInterval(5*time.Minute),
 		ydb.WithConnectionTTL(5*time.Second),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		metrics.WithTraces(registry, metrics.WithSeparator("_")),
+		metrics.WithTraces(registry, metrics.WithDetails(trace.DetailsAll)),
 	)
 	if err != nil {
 		panic(err)

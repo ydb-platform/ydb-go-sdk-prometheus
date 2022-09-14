@@ -8,17 +8,5 @@ import (
 
 // DatabaseSQL makes trace.DatabaseSQL with core metrics publishing
 func DatabaseSQL(registry prometheus.Registerer, opts ...option) trace.DatabaseSQL {
-	c := &config{
-		registry:  registry,
-		namespace: defaultNamespace,
-		separator: defaultSeparator,
-	}
-	for _, o := range opts {
-		o(c)
-	}
-
-	if c.details == 0 {
-		c.details = trace.DetailsAll
-	}
-	return metrics.DatabaseSQL(c)
+	return metrics.DatabaseSQL(makeConfig(registry, opts...))
 }

@@ -8,16 +8,5 @@ import (
 
 // Scheme makes trace.Scheme with prometheus metrics publishing
 func Scheme(registry prometheus.Registerer, opts ...option) trace.Scheme {
-	c := &config{
-		registry:  registry,
-		namespace: defaultNamespace,
-		separator: defaultSeparator,
-	}
-	for _, o := range opts {
-		o(c)
-	}
-	if c.details == 0 {
-		c.details = trace.DetailsAll
-	}
-	return metrics.Scheme(c)
+	return metrics.Scheme(makeConfig(registry, opts...))
 }

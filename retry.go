@@ -8,16 +8,5 @@ import (
 
 // Retry makes trace.Retry with prometheus metrics publishing
 func Retry(registry prometheus.Registerer, opts ...option) trace.Retry {
-	c := &config{
-		registry:  registry,
-		namespace: defaultNamespace,
-		separator: defaultSeparator,
-	}
-	for _, o := range opts {
-		o(c)
-	}
-	if c.details == 0 {
-		c.details = trace.DetailsAll
-	}
-	return metrics.Retry(c)
+	return metrics.Retry(makeConfig(registry, opts...))
 }

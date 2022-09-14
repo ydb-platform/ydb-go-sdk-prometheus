@@ -21,16 +21,33 @@ var (
 )
 
 type config struct {
-	details   trace.Details
-	separator string
-	registry  prometheus.Registerer
-	namespace string
+	details      trace.Details
+	separator    string
+	registry     prometheus.Registerer
+	namespace    string
+	timerBuckets []float64
 
 	m          sync.Mutex
 	counters   map[metricKey]*counterVec
 	gauges     map[metricKey]*gaugeVec
 	timers     map[metricKey]*timerVec
 	histograms map[metricKey]*histogramVec
+}
+
+func makeConfig(registry prometheus.Registerer, opts ...option) *config {
+	c := &config{
+		registry:     registry,
+		namespace:    defaultNamespace,
+		separator:    defaultSeparator,
+		timerBuckets: defaultTimerBuckets,
+	}
+	for _, o := range opts {
+		o(c)
+	}
+	if c.details == 0 {
+		c.details = trace.DetailsAll
+	}
+	return c
 }
 
 func (c *config) CounterVec(name string, labelNames ...string) registry.CounterVec {
@@ -64,14 +81,15 @@ func (c *config) join(a, b string) string {
 
 func (c *config) WithSystem(subsystem string) registry.Config {
 	return &config{
-		separator:  c.separator,
-		details:    c.details,
-		registry:   c.registry,
-		namespace:  c.join(c.namespace, subsystem),
-		counters:   make(map[metricKey]*counterVec),
-		gauges:     make(map[metricKey]*gaugeVec),
-		timers:     make(map[metricKey]*timerVec),
-		histograms: make(map[metricKey]*histogramVec),
+		separator:    c.separator,
+		details:      c.details,
+		registry:     c.registry,
+		timerBuckets: c.timerBuckets,
+		namespace:    c.join(c.namespace, subsystem),
+		counters:     make(map[metricKey]*counterVec),
+		gauges:       make(map[metricKey]*gaugeVec),
+		timers:       make(map[metricKey]*timerVec),
+		histograms:   make(map[metricKey]*histogramVec),
 	}
 }
 
@@ -203,7 +221,7 @@ func (c *config) TimerVec(name string, labelNames ...string) registry.TimerVec {
 	opts := prometheus.HistogramOpts{
 		Namespace: c.namespace,
 		Name:      name,
-		Buckets:   defaultTimerBuckets,
+		Buckets:   c.timerBuckets,
 	}
 	timersOpts := newTimerOpts(opts)
 	c.m.Lock()
@@ -260,5 +278,11 @@ func WithDetails(details trace.Details) option {
 func WithSeparator(separator string) option {
 	return func(c *config) {
 		c.separator = separator
+	}
+}
+
+func WithTimerBuckets(timerBuckets []float64) option {
+	return func(c *config) {
+		c.timerBuckets = timerBuckets
 	}
 }

@@ -8,16 +8,5 @@ import (
 
 // Coordination makes trace.Coordination with prometheus metrics publishing
 func Coordination(registry prometheus.Registerer, opts ...option) trace.Coordination {
-	c := &config{
-		registry:  registry,
-		namespace: defaultNamespace,
-		separator: defaultSeparator,
-	}
-	for _, o := range opts {
-		o(c)
-	}
-	if c.details == 0 {
-		c.details = trace.DetailsAll
-	}
-	return metrics.Coordination(c)
+	return metrics.Coordination(makeConfig(registry, opts...))
 }
