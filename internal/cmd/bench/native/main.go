@@ -169,8 +169,7 @@ func promPusher(registry prometheus.Gatherer) {
 }
 
 func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
-	err = c.Do(
-		ctx,
+	err = c.Do(ctx,
 		func(ctx context.Context, s table.Session) (err error) {
 			return s.CreateTable(ctx, path.Join(prefix, tableName),
 				options.WithColumn("series_id", types.Optional(types.TypeUint64)),
@@ -215,8 +214,7 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 					types.StructFieldValue("comment", types.UTF8Value(fmt.Sprintf("series No. %d comment", i+shift+3))),
 				))
 			}
-			err := c.Do(
-				ctx,
+			err := c.Do(ctx,
 				func(ctx context.Context, session table.Session) (err error) {
 					return session.BulkUpsert(
 						ctx,
@@ -257,8 +255,7 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 		prefix,
 		limit,
 	)
-	err = c.Do(
-		ctx,
+	err = c.Do(ctx,
 		func(ctx context.Context, s table.Session) error {
 			var res result.StreamResult
 			count = 0
@@ -308,8 +305,7 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 }
 
 func streamReadTable(ctx context.Context, c table.Client, prefix string, limit int64) (count uint64, err error) {
-	err = c.Do(
-		ctx,
+	err = c.Do(ctx,
 		func(ctx context.Context, s table.Session) error {
 			var res result.StreamResult
 			count = 0
@@ -370,8 +366,7 @@ func executeDataQuery(ctx context.Context, c table.Client, prefix string, limit 
 			limit,
 		)
 	)
-	err = c.DoTx(
-		ctx,
+	err = c.DoTx(ctx,
 		func(ctx context.Context, tx table.TransactionActor) error {
 			var res result.StreamResult
 			count = 0
