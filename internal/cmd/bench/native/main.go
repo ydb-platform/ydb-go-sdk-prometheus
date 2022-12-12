@@ -59,7 +59,7 @@ func main() {
 		ydb.WithDiscoveryInterval(5*time.Minute),
 		ydb.WithConnectionTTL(5*time.Second),
 		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		metrics.WithTraces(registry, metrics.WithDetails(trace.DetailsAll)),
+		metrics.WithTraces(registry, metrics.WithDetails(trace.DiscoveryEvents|trace.TablePoolEvents)),
 	)
 	if err != nil {
 		panic(err)

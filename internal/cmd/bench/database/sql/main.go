@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -28,7 +27,6 @@ const (
 )
 
 func init() {
-	log.SetOutput(ioutil.Discard)
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
@@ -45,13 +43,13 @@ func main() {
 		),
 	)
 	if err != nil {
-		log.Fatalf("connect error: %v", err)
+		panic("connect error: " + err.Error())
 	}
 	defer func() { _ = nativeDriver.Close(ctx) }()
 
 	connector, err := ydb.Connector(nativeDriver)
 	if err != nil {
-		log.Fatalf("create connector failed: %v", err)
+		panic("create connector failed: " + err.Error())
 	}
 
 	db := sql.OpenDB(connector)
@@ -64,24 +62,24 @@ func main() {
 
 	cc, err := ydb.Unwrap(db)
 	if err != nil {
-		log.Fatalf("unwrap failed: %v", err)
+		panic("unwrap failed: " + err.Error())
 	}
 
 	prefix := path.Join(cc.Name(), prefix)
 
 	err = sugar.RemoveRecursive(ctx, cc, prefix)
 	if err != nil {
-		log.Fatalf("remove recursive failed: %v", err)
+		panic("remove recursive failed: " + err.Error())
 	}
 
-	//err = prepareSchema(ctx, db, prefix)
-	//if err != nil {
-	//	log.Fatalf("create tables error: %v", err)
-	//}
-	//
+	err = prepareSchema(ctx, db, prefix)
+	if err != nil {
+		panic("create tables error: " + err.Error())
+	}
+
 	err = fillTablesWithData(ctx, db, prefix)
 	if err != nil {
-		log.Fatalf("fill tables with data error: %v", err)
+		panic("fill tables with data error: " + err.Error())
 	}
 
 	wg := sync.WaitGroup{}
