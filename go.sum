@@ -212,8 +212,8 @@ github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMT
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/ydb-platform/ydb-go-genproto v0.0.0-20220801095836-cf975531fd1f h1:QmTU3AtCBOI8zarYB4N3q+VQQxpVxu8pRHJN5Fd8WKc=
 github.com/ydb-platform/ydb-go-genproto v0.0.0-20220801095836-cf975531fd1f/go.mod h1:Er+FePu1dNUieD+XTMDduGpQuCPssK5Q4BjF+IIXJ3I=
-github.com/ydb-platform/ydb-go-sdk-metrics v0.16.3 h1:30D5jErLAiGjchVG2D9JiCLbST5LpAiyS7DoUtHkWsU=
-github.com/ydb-platform/ydb-go-sdk-metrics v0.16.3/go.mod h1:bqOjIBSt5LtA8fcTprRPGLvlQGkNlqBSRqnL+yZUJh4=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.4 h1:IleO/tgxypZ/BQWZNDWomf2qsefGnkCT4qW8J+SW2Zo=
+github.com/ydb-platform/ydb-go-sdk-metrics v0.16.4/go.mod h1:bqOjIBSt5LtA8fcTprRPGLvlQGkNlqBSRqnL+yZUJh4=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.35.1/go.mod h1:eD5OyVA8MuMq3+BYBMKGUfa2faTZhbx+LE+y1RgitFE=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.37.8 h1:uM8SwoX9euIfoWESqmuUJdLI/fJf4HcZ+uu6sZjNEE4=
 github.com/ydb-platform/ydb-go-sdk/v3 v3.37.8/go.mod h1:eD5OyVA8MuMq3+BYBMKGUfa2faTZhbx+LE+y1RgitFE=

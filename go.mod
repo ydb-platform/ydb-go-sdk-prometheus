@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/google/uuid v1.1.2
 	github.com/prometheus/client_golang v1.12.2
-	github.com/ydb-platform/ydb-go-sdk-metrics v0.16.3
+	github.com/ydb-platform/ydb-go-sdk-metrics v0.16.4
 	github.com/ydb-platform/ydb-go-sdk/v3 v3.37.8
 )
 
