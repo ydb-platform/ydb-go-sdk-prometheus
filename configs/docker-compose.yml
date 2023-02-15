@@ -78,7 +78,7 @@ services:
       org.label-schema.group: "monitoring"
 
   ydb:
-    image: cr.yandex/yc/yandex-docker-local-ydb:latest
+    image: cr.yandex/yc/yandex-docker-local-ydb:23.3
     container_name: ydb-local
     hostname: localhost
     environment:
@@ -89,6 +89,7 @@ services:
       - YDB_DEFAULT_LOG_LEVEL=NOTICE
     ports:
       - "2136:2136"
+      - "8765:8765"
     networks:
       - monitor-net
     labels:

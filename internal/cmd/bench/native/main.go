@@ -4,18 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"path"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/ydb-platform/ydb-go-sdk/v3"
-	"github.com/ydb-platform/ydb-go-sdk/v3/balancers"
+	"github.com/ydb-platform/ydb-go-sdk/v3/log"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/options"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/result"
@@ -23,22 +20,23 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 
-	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
+
+	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
-// flags
 var (
-	prometheusPushUrl = flag.String("prom-push-url", "http://localhost:8080", "Push url for prometheus metrics, set to 'off' for disable")
+	ydbURL        = "grpc://localhost:2136/local"
+	prometheusURL = "http://localhost:8080"
+	threads       = 50
 )
 
 func init() {
-	log.SetFlags(0)
-	if os.Getenv("HIDE_APPLICATION_OUTPUT") == "1" {
-		log.SetOutput(ioutil.Discard)
-	}
+	flag.StringVar(&ydbURL, "ydb-url", ydbURL, "connection string for connect to YDB")
+	flag.StringVar(&prometheusURL, "prometheus-url", prometheusURL, "Push url for prometheus metrics, set to 'off' for disable")
+	flag.IntVar(&threads, "threads", threads, "concurrency factor for upsert and read data")
+
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
@@ -48,18 +46,12 @@ func main() {
 	ctx := context.Background()
 	registry := prometheus.NewRegistry()
 
-	db, err := ydb.Open(
-		ctx,
-		os.Getenv("YDB_CONNECTION_STRING"),
-		ydb.WithDialTimeout(15*time.Second),
-		ydb.WithBalancer(balancers.RandomChoice()),
-		ydb.WithAccessTokenCredentials(os.Getenv("YDB_ACCESS_TOKEN_CREDENTIALS")),
-		ydb.WithConnectionTTL(10*time.Second),
-		ydb.WithSessionPoolSizeLimit(50),
-		ydb.WithDiscoveryInterval(5*time.Minute),
-		ydb.WithConnectionTTL(5*time.Second),
-		ydb.WithSessionPoolIdleThreshold(time.Second*5),
-		metrics.WithTraces(registry, metrics.WithDetails(trace.DiscoveryEvents|trace.TablePoolEvents)),
+	connectCtx, connectCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer connectCancel()
+
+	db, err := ydb.Open(connectCtx, ydbURL,
+		metrics.WithTraces(registry),
+		ydb.WithLogger(log.Default(os.Stdout), trace.DetailsAll, log.WithLogQuery()),
 	)
 	if err != nil {
 		panic(err)
@@ -79,19 +71,12 @@ func main() {
 		"error": "",
 	}).Add(0)
 
-	if concurrency, err := strconv.Atoi(os.Getenv("YDB_PREPARE_BENCH_DATA")); err == nil && concurrency > 0 {
-		_ = upsertData(ctx, db.Table(), db.Name(), "series", registry, concurrency, errs)
+	if err := upsertData(ctx, db.Table(), db.Name(), "series", registry, threads, errs); err != nil {
+		panic(err)
 	}
 
-	concurrency := func() int {
-		if concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY")); err != nil && concurrency > 0 {
-			return concurrency
-		}
-		return 50
-	}()
-
 	wg := &sync.WaitGroup{}
-	wg.Add(concurrency)
+	wg.Add(threads)
 
 	inFlight := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "app",
@@ -108,7 +93,7 @@ func main() {
 		Name:      "latency_per_request",
 	}, []string{"success"})
 	_ = registry.Register(latency)
-	for i := 0; i < concurrency; i++ {
+	for i := 0; i < threads; i++ {
 		go func() {
 			defer wg.Done()
 			for {
@@ -153,22 +138,36 @@ func main() {
 }
 
 func promPusher(registry prometheus.Gatherer) {
-	if *prometheusPushUrl == "off" {
-		return
-	}
-
-	pusher := push.New(*prometheusPushUrl, "ydb-go-sdk")
+	pusher := push.New(prometheusURL, "ydb-go-sdk")
 	pusher.Gatherer(registry)
 	for {
 		time.Sleep(time.Second)
 		if err := pusher.Push(); err != nil {
-			log.Printf("Push error: %+v", err)
+			fmt.Fprintf(os.Stderr, "Push error: %+v", err)
 		}
 	}
 
 }
 
-func upsertData(ctx context.Context, c table.Client, prefix, tableName string, registry *prometheus.Registry, concurrency int, errs *prometheus.GaugeVec) (err error) {
+func upsertData(
+	ctx context.Context,
+	c table.Client,
+	prefix, tableName string,
+	registry *prometheus.Registry,
+	threads int,
+	errs *prometheus.GaugeVec,
+) (err error) {
+	err = c.Do(ctx,
+		func(ctx context.Context, s table.Session) (err error) {
+			return s.DropTable(ctx, path.Join(prefix, tableName))
+		},
+		table.WithIdempotent(),
+	)
+	if err != nil {
+		errs.With(map[string]string{
+			"error": err.Error(),
+		}).Add(1)
+	}
 	err = c.Do(ctx,
 		func(ctx context.Context, s table.Session) (err error) {
 			return s.CreateTable(ctx, path.Join(prefix, tableName),
@@ -195,7 +194,7 @@ func upsertData(ctx context.Context, c table.Client, prefix, tableName string, r
 		Name:      "upsert_count",
 	}, []string{"success"})
 	_ = registry.Register(counter)
-	sema := make(chan struct{}, concurrency)
+	sema := make(chan struct{}, threads)
 	for shift := 0; shift < rowsLen; shift += batchSize {
 		wg.Add(1)
 		sema <- struct{}{}
@@ -279,7 +278,7 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 				title *string
 				date  *time.Time
 			)
-			log.Printf("> execute scan query:\n")
+			fmt.Fprintf(os.Stdout, "> execute scan query:\n")
 			for res.NextResultSet(ctx) {
 				for res.NextRow() {
 					count++
@@ -291,7 +290,7 @@ func executeScanQuery(ctx context.Context, c table.Client, prefix string, limit 
 					if err != nil {
 						return err
 					}
-					log.Printf(
+					fmt.Fprintf(os.Stdout,
 						"  > %d %s %s\n",
 						*id, *title, *date,
 					)
@@ -328,7 +327,7 @@ func streamReadTable(ctx context.Context, c table.Client, prefix string, limit i
 				title *string
 				date  *time.Time
 			)
-			log.Printf("> execute scan query:\n")
+			fmt.Fprintf(os.Stdout, "> execute scan query:\n")
 			for res.NextResultSet(ctx) {
 				for res.NextRow() {
 					count++
@@ -340,7 +339,7 @@ func streamReadTable(ctx context.Context, c table.Client, prefix string, limit i
 					if err != nil {
 						return err
 					}
-					log.Printf(
+					fmt.Fprintf(os.Stdout,
 						"  > %d %s %s\n",
 						*id, *title, *date,
 					)
@@ -386,7 +385,7 @@ func executeDataQuery(ctx context.Context, c table.Client, prefix string, limit 
 				title *string
 				date  *time.Time
 			)
-			log.Printf("> execute data query:\n")
+			fmt.Fprintf(os.Stdout, "> execute data query:\n")
 			for res.NextResultSet(ctx, "series_id", "title", "release_date") {
 				for res.NextRow() {
 					count++
@@ -394,7 +393,7 @@ func executeDataQuery(ctx context.Context, c table.Client, prefix string, limit 
 					if err != nil {
 						return err
 					}
-					log.Printf(
+					fmt.Fprintf(os.Stdout,
 						"  > %d %s %s\n",
 						*id, *title, *date,
 					)

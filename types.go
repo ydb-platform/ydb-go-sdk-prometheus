@@ -2,12 +2,12 @@ package metrics
 
 import (
 	"fmt"
+	"github.com/ydb-platform/ydb-go-sdk/v3/metrics"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/ydb-platform/ydb-go-sdk-metrics/registry"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
@@ -19,6 +19,8 @@ const (
 var (
 	defaultTimerBuckets = prometheus.ExponentialBuckets(time.Millisecond.Seconds(), 1.25, 100)
 )
+
+var _ metrics.Config = (*config)(nil)
 
 type config struct {
 	details      trace.Details
@@ -34,9 +36,10 @@ type config struct {
 	histograms map[metricKey]*histogramVec
 }
 
-func makeConfig(registry prometheus.Registerer, opts ...option) *config {
+func Config(registry prometheus.Registerer, opts ...option) *config {
 	c := &config{
 		registry:     registry,
+		details:      trace.DetailsAll,
 		namespace:    defaultNamespace,
 		separator:    defaultSeparator,
 		timerBuckets: defaultTimerBuckets,
@@ -44,13 +47,10 @@ func makeConfig(registry prometheus.Registerer, opts ...option) *config {
 	for _, o := range opts {
 		o(c)
 	}
-	if c.details == 0 {
-		c.details = trace.DetailsAll
-	}
 	return c
 }
 
-func (c *config) CounterVec(name string, labelNames ...string) registry.CounterVec {
+func (c *config) CounterVec(name string, labelNames ...string) metrics.CounterVec {
 	opts := prometheus.CounterOpts{
 		Namespace: c.namespace,
 		Name:      name,
@@ -79,7 +79,7 @@ func (c *config) join(a, b string) string {
 	return strings.Join([]string{a, b}, c.separator)
 }
 
-func (c *config) WithSystem(subsystem string) registry.Config {
+func (c *config) WithSystem(subsystem string) metrics.Config {
 	return &config{
 		separator:    c.separator,
 		details:      c.details,
@@ -138,7 +138,7 @@ type counterVec struct {
 	c *prometheus.CounterVec
 }
 
-func (c *counterVec) With(labels map[string]string) registry.Counter {
+func (c *counterVec) With(labels map[string]string) metrics.Counter {
 	cnt, err := c.c.GetMetricWith(labels)
 	if err != nil {
 		panic(err)
@@ -174,7 +174,7 @@ func (h *histogram) Record(v float64) {
 	h.o.Observe(v)
 }
 
-func (h *timerVec) With(labels map[string]string) registry.Timer {
+func (h *timerVec) With(labels map[string]string) metrics.Timer {
 	observer, err := h.t.GetMetricWith(labels)
 	if err != nil {
 		panic(err)
@@ -182,7 +182,7 @@ func (h *timerVec) With(labels map[string]string) registry.Timer {
 	return &timer{o: observer}
 }
 
-func (h *histogramVec) With(labels map[string]string) registry.Histogram {
+func (h *histogramVec) With(labels map[string]string) metrics.Histogram {
 	observer, err := h.h.GetMetricWith(labels)
 	if err != nil {
 		panic(err)
@@ -190,7 +190,7 @@ func (h *histogramVec) With(labels map[string]string) registry.Histogram {
 	return &histogram{o: observer}
 }
 
-func (g *gaugeVec) With(labels map[string]string) registry.Gauge {
+func (g *gaugeVec) With(labels map[string]string) metrics.Gauge {
 	gauge, err := g.g.GetMetricWith(labels)
 	if err != nil {
 		panic(err)
@@ -198,7 +198,7 @@ func (g *gaugeVec) With(labels map[string]string) registry.Gauge {
 	return gauge
 }
 
-func (c *config) GaugeVec(name string, labelNames ...string) registry.GaugeVec {
+func (c *config) GaugeVec(name string, labelNames ...string) metrics.GaugeVec {
 	opts := prometheus.GaugeOpts{
 		Namespace: c.namespace,
 		Name:      name,
@@ -217,7 +217,7 @@ func (c *config) GaugeVec(name string, labelNames ...string) registry.GaugeVec {
 	return g
 }
 
-func (c *config) TimerVec(name string, labelNames ...string) registry.TimerVec {
+func (c *config) TimerVec(name string, labelNames ...string) metrics.TimerVec {
 	opts := prometheus.HistogramOpts{
 		Namespace: c.namespace,
 		Name:      name,
@@ -237,7 +237,7 @@ func (c *config) TimerVec(name string, labelNames ...string) registry.TimerVec {
 	return t
 }
 
-func (c *config) HistogramVec(name string, buckets []float64, labelNames ...string) registry.HistogramVec {
+func (c *config) HistogramVec(name string, buckets []float64, labelNames ...string) metrics.HistogramVec {
 	opts := prometheus.HistogramOpts{
 		Namespace: c.namespace,
 		Name:      name,

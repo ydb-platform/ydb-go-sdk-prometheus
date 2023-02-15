@@ -1,31 +1,18 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"path"
-	"text/template"
 	"time"
 
 	"github.com/ydb-platform/ydb-go-sdk/v3"
 	"github.com/ydb-platform/ydb-go-sdk/v3/retry"
-	"github.com/ydb-platform/ydb-go-sdk/v3/sugar"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table"
 	"github.com/ydb-platform/ydb-go-sdk/v3/table/types"
 )
-
-func render(t *template.Template, data interface{}) string {
-	var buf bytes.Buffer
-	err := t.Execute(&buf, data)
-	if err != nil {
-		panic(err)
-	}
-	return buf.String()
-}
 
 func sliceToInterfaces[T any](v []T) []interface{} {
 	ii := make([]interface{}, len(v))
@@ -35,21 +22,12 @@ func sliceToInterfaces[T any](v []T) []interface{} {
 	return ii
 }
 
-func selectDefault(ctx context.Context, db *sql.DB, prefix string) (err error) {
+func selectDefault(ctx context.Context, db *sql.DB) (err error) {
 	// explain of query
 	err = retry.Do(ctx, db, func(ctx context.Context, cc *sql.Conn) (err error) {
-		row := cc.QueryRowContext(ydb.WithQueryMode(ctx, ydb.ExplainQueryMode),
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					SELECT series_id, title, release_date FROM series;
-				`)), struct {
-					TablePathPrefix string
-				}{
-					TablePathPrefix: prefix,
-				},
-			),
+		row := cc.QueryRowContext(ydb.WithQueryMode(ctx, ydb.ExplainQueryMode), `
+				SELECT series_id, title, release_date FROM series;
+			`,
 		)
 		var (
 			ast  string
@@ -65,19 +43,7 @@ func selectDefault(ctx context.Context, db *sql.DB, prefix string) (err error) {
 		return fmt.Errorf("explain query failed: %w", err)
 	}
 	err = retry.Do(ydb.WithTxControl(ctx, table.OnlineReadOnlyTxControl()), db, func(ctx context.Context, cc *sql.Conn) (err error) {
-		rows, err := cc.QueryContext(ctx,
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					SELECT series_id, title, release_date FROM series;
-				`)), struct {
-					TablePathPrefix string
-				}{
-					TablePathPrefix: prefix,
-				},
-			),
-		)
+		rows, err := cc.QueryContext(ctx, `SELECT series_id, title, release_date FROM series;`)
 		if err != nil {
 			return err
 		}
@@ -107,7 +73,7 @@ func selectDefault(ctx context.Context, db *sql.DB, prefix string) (err error) {
 	return nil
 }
 
-func selectScan(ctx context.Context, db *sql.DB, prefix string) (err error) {
+func selectScan(ctx context.Context, db *sql.DB) (err error) {
 	// scan query
 	err = retry.Do(
 		ydb.WithTxControl(ctx, table.StaleReadOnlyTxControl()), db,
@@ -118,22 +84,10 @@ func selectScan(ctx context.Context, db *sql.DB, prefix string) (err error) {
 				seasonIDs []types.Value
 			)
 			// getting series ID's
-			row := cc.QueryRowContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode),
-				render(
-					template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					DECLARE $seriesTitle AS Utf8;
-	
-					SELECT 			series_id 		
-					FROM 			series
-					WHERE 			title LIKE $seriesTitle;
-				`)), struct {
-						TablePathPrefix string
-					}{
-						TablePathPrefix: prefix,
-					},
-				),
+			row := cc.QueryRowContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode), `
+				SELECT 			series_id 		
+				FROM 			series
+				WHERE 			title LIKE $seriesTitle;`,
 				table.NewQueryParameters( // supports native ydb-go-sdk query parameters as arg
 					table.ValueParam("$seriesTitle", types.TextValue("%IT Crowd%")),
 				),
@@ -147,23 +101,11 @@ func selectScan(ctx context.Context, db *sql.DB, prefix string) (err error) {
 			}
 
 			// getting season ID's
-			rows, err := cc.QueryContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode),
-				render(
-					template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					DECLARE $seasonTitle AS Utf8;
-			
-					SELECT 			season_id 		
-					FROM 			seasons
-					WHERE 			title LIKE $seasonTitle
-				`)), struct {
-						TablePathPrefix string
-					}{
-						TablePathPrefix: prefix,
-					},
-				),
-				sql.Named("seasonTitle", "%Season 1%"),
+			rows, err := cc.QueryContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode), `
+				SELECT 			season_id 		
+				FROM 			seasons
+				WHERE 			title LIKE $seasonTitle
+				`, sql.Named("seasonTitle", "%Season 1%"),
 			)
 			if err != nil {
 				return err
@@ -186,33 +128,17 @@ func selectScan(ctx context.Context, db *sql.DB, prefix string) (err error) {
 				table.ValueParam("from", types.DateValueFromTime(date("2006-01-01"))),
 				table.ValueParam("to", types.DateValueFromTime(date("2006-12-31"))),
 			)
-			declares, err := sugar.GenerateDeclareSection(params)
 			if err != nil {
 				return err
 			}
-			rows, err = cc.QueryContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode),
-				render(
-					template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-					PRAGMA AnsiInForEmptyOrNullableItemsCollections;
-
-					{{ .Declares }}
-
-					SELECT 
-						episode_id, title, air_date FROM episodes
-					WHERE 	
-						series_id IN $seriesIDs 
-						AND season_id IN $seasonIDs 
-						AND air_date BETWEEN $from AND $to;
-				`)), struct {
-						TablePathPrefix string
-						Declares        string
-					}{
-						TablePathPrefix: prefix,
-						Declares:        declares,
-					},
-				),
-				params,
+			rows, err = cc.QueryContext(ydb.WithQueryMode(ctx, ydb.ScanQueryMode), `
+				SELECT 
+					episode_id, title, air_date FROM episodes
+				WHERE 	
+					series_id IN $seriesIDs 
+					AND season_id IN $seasonIDs 
+					AND air_date BETWEEN $from AND $to;
+				`, params,
 			)
 			if err != nil {
 				return err
@@ -244,59 +170,41 @@ func selectScan(ctx context.Context, db *sql.DB, prefix string) (err error) {
 	return nil
 }
 
-func fillTablesWithData(ctx context.Context, db *sql.DB, prefix string) (err error) {
+func fillTablesWithData(ctx context.Context, db *sql.DB) (err error) {
 	series, seasonsData, episodesData := getData()
 	args := []sql.NamedArg{
 		sql.Named("seriesData", types.ListValue(series...)),
 		sql.Named("seasonsData", types.ListValue(seasonsData...)),
 		sql.Named("episodesData", types.ListValue(episodesData...)),
 	}
-	declares, err := sugar.GenerateDeclareSection(args)
-	if err != nil {
-		return err
-	}
 	err = retry.DoTx(ctx, db, func(ctx context.Context, tx *sql.Tx) error {
-		if _, err = tx.ExecContext(ctx,
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					{{ .Declares }}
+		if _, err = tx.ExecContext(ctx, `
+			REPLACE INTO series
+			SELECT
+				series_id,
+				title,
+				series_info,
+				release_date,
+				comment
+			FROM AS_TABLE($seriesData);
 				
-					REPLACE INTO series
-					SELECT
-						series_id,
-						title,
-						series_info,
-						release_date,
-						comment
-					FROM AS_TABLE($seriesData);
-						
-					REPLACE INTO seasons
-					SELECT
-						series_id,
-						season_id,
-						title,
-						first_aired,
-						last_aired
-					FROM AS_TABLE($seasonsData);
-						
-					REPLACE INTO episodes
-					SELECT
-						series_id,
-						season_id,
-						episode_id,
-						title,
-						air_date
-					FROM AS_TABLE($episodesData);
-				`)), struct {
-					TablePathPrefix string
-					Declares        string
-				}{
-					TablePathPrefix: prefix,
-					Declares:        declares,
-				},
-			),
+			REPLACE INTO seasons
+			SELECT
+				series_id,
+				season_id,
+				title,
+				first_aired,
+				last_aired
+			FROM AS_TABLE($seasonsData);
+				
+			REPLACE INTO episodes
+			SELECT
+				series_id,
+				season_id,
+				episode_id,
+				title,
+				air_date
+			FROM AS_TABLE($episodesData);`,
 			sliceToInterfaces(args)...,
 		); err != nil {
 			return err
@@ -309,40 +217,27 @@ func fillTablesWithData(ctx context.Context, db *sql.DB, prefix string) (err err
 	return nil
 }
 
-func prepareSchema(ctx context.Context, db *sql.DB, prefix string) (err error) {
+func prepareSchema(ctx context.Context, db *sql.DB) (err error) {
+	ctx = ydb.WithQueryMode(ctx, ydb.SchemeQueryMode)
 	err = retry.Do(ctx, db, func(ctx context.Context, cc *sql.Conn) error {
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			fmt.Sprintf("DROP TABLE `%s`", path.Join(prefix, "series")),
-		)
+		_, err = cc.ExecContext(ctx, `DROP TABLE series;`)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stdout, "warn: drop series table failed: %v", err)
 		}
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-
-					CREATE TABLE series (
-						series_id Bytes,
-						title Utf8,
-						series_info Utf8,
-						release_date Date,
-						comment Utf8,
-						INDEX index_series_title GLOBAL ASYNC ON ( title ),
-						PRIMARY KEY (
-							series_id
-						)
-					) WITH (
-						AUTO_PARTITIONING_BY_LOAD = ENABLED
-					);
-				`)), struct {
-					TablePathPrefix string
-				}{
-					TablePathPrefix: prefix,
-				},
-			),
+		_, err = cc.ExecContext(ctx, `
+			CREATE TABLE series (
+				series_id Bytes,
+				title Utf8,
+				series_info Utf8,
+				release_date Date,
+				comment Utf8,
+				INDEX index_series_title GLOBAL ASYNC ON ( title ),
+				PRIMARY KEY (
+					series_id
+				)
+			) WITH (
+				AUTO_PARTITIONING_BY_LOAD = ENABLED
+			);`,
 		)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "create series table failed: %v", err)
@@ -354,40 +249,26 @@ func prepareSchema(ctx context.Context, db *sql.DB, prefix string) (err error) {
 		return fmt.Errorf("create table failed: %w", err)
 	}
 	err = retry.Do(ctx, db, func(ctx context.Context, cc *sql.Conn) error {
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			fmt.Sprintf("DROP TABLE `%s`", path.Join(prefix, "seasons")),
-		)
+		_, err = cc.ExecContext(ctx, `DROP TABLE seasons;`)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stdout, "warn: drop seasons table failed: %v", err)
 		}
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-			
-					CREATE TABLE seasons (
-						series_id Bytes,
-						season_id Bytes,
-						title Utf8,
-						first_aired Date,
-						last_aired Date,
-						INDEX index_seasons_title GLOBAL ASYNC ON ( title ),
-						INDEX index_seasons_first_aired GLOBAL ASYNC ON ( first_aired ),
-						PRIMARY KEY (
-							series_id,
-							season_id
-						)
-					) WITH (
-						AUTO_PARTITIONING_BY_LOAD = ENABLED
-					);
-				`)), struct {
-					TablePathPrefix string
-				}{
-					TablePathPrefix: prefix,
-				},
-			),
+		_, err = cc.ExecContext(ctx, `
+			CREATE TABLE seasons (
+				series_id Bytes,
+				season_id Bytes,
+				title Utf8,
+				first_aired Date,
+				last_aired Date,
+				INDEX index_seasons_title GLOBAL ASYNC ON ( title ),
+				INDEX index_seasons_first_aired GLOBAL ASYNC ON ( first_aired ),
+				PRIMARY KEY (
+					series_id,
+					season_id
+				)
+			) WITH (
+				AUTO_PARTITIONING_BY_LOAD = ENABLED
+			);`,
 		)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "create seasons table failed: %v", err)
@@ -399,41 +280,27 @@ func prepareSchema(ctx context.Context, db *sql.DB, prefix string) (err error) {
 		return fmt.Errorf("create table failed: %w", err)
 	}
 	err = retry.Do(ctx, db, func(ctx context.Context, cc *sql.Conn) error {
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			fmt.Sprintf("DROP TABLE `%s`", path.Join(prefix, "episodes")),
-		)
+		_, err = cc.ExecContext(ctx, `DROP TABLE episodes`)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stdout, "warn: drop episodes table failed: %v", err)
 		}
-		_, err = cc.ExecContext(
-			ydb.WithQueryMode(ctx, ydb.SchemeQueryMode),
-			render(
-				template.Must(template.New("").Parse(`
-					PRAGMA TablePathPrefix("{{ .TablePathPrefix }}");
-			
-					CREATE TABLE episodes (
-						series_id Bytes,
-						season_id Bytes,
-						episode_id Bytes,
-						title Utf8,
-						air_date Date,
-						views Uint64,
-						INDEX index_episodes_air_date GLOBAL ASYNC ON ( air_date ),
-						PRIMARY KEY (
-							series_id,
-							season_id,
-							episode_id
-						)
-					) WITH (
-						AUTO_PARTITIONING_BY_LOAD = ENABLED
-					);
-				`)), struct {
-					TablePathPrefix string
-				}{
-					TablePathPrefix: prefix,
-				},
-			),
+		_, err = cc.ExecContext(ctx, `
+			CREATE TABLE episodes (
+				series_id Bytes,
+				season_id Bytes,
+				episode_id Bytes,
+				title Utf8,
+				air_date Date,
+				views Uint64,
+				INDEX index_episodes_air_date GLOBAL ASYNC ON ( air_date ),
+				PRIMARY KEY (
+					series_id,
+					season_id,
+					episode_id
+				)
+			) WITH (
+				AUTO_PARTITIONING_BY_LOAD = ENABLED
+			);`,
 		)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "create episodes table failed: %v", err)
