@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -38,12 +37,12 @@ func selectDefault(ctx context.Context, db *sql.DB) (err error) {
 		}
 		//log.Printf("AST = %s\n\nPlan = %s", ast, plan)
 		return nil
-	}, retry.WithDoRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true))
 	if err != nil {
 		return fmt.Errorf("explain query failed: %w", err)
 	}
 	err = retry.Do(ydb.WithTxControl(ctx, table.OnlineReadOnlyTxControl()), db, func(ctx context.Context, cc *sql.Conn) (err error) {
-		rows, err := cc.QueryContext(ctx, `SELECT series_id, title, release_date FROM series;`)
+		rows, err := cc.QueryContext(ctx, `SELECT series_id, title, release_date FROM series LIMIT 1000;`)
 		if err != nil {
 			return err
 		}
@@ -55,18 +54,18 @@ func selectDefault(ctx context.Context, db *sql.DB) (err error) {
 			title       *string
 			releaseDate *time.Time
 		)
-		log.Println("> select of all known series:")
+		//log.Println("> select of all known series:")
 		for rows.Next() {
 			if err = rows.Scan(&id, &title, &releaseDate); err != nil {
 				return err
 			}
-			log.Printf(
-				"> [%s] %s (%s)",
-				*id, *title, releaseDate.Format("2006-01-02"),
-			)
+			//log.Printf(
+			//	"> [%s] %s (%s)",
+			//	*id, *title, releaseDate.Format("2006-01-02"),
+			//)
 		}
 		return rows.Err()
-	}, retry.WithDoRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true), retry.WithLabel("selectDefault"))
 	if err != nil {
 		return fmt.Errorf("execute data query failed: %w", err)
 	}
@@ -151,18 +150,18 @@ func selectScan(ctx context.Context, db *sql.DB) (err error) {
 				title      string
 				firstAired time.Time
 			)
-			log.Println("> scan select of episodes of `Season 1` of `IT Crowd` between 2006-01-01 and 2006-12-31:")
+			//log.Println("> scan select of episodes of `Season 1` of `IT Crowd` between 2006-01-01 and 2006-12-31:")
 			for rows.Next() {
 				if err = rows.Scan(&episodeID, &title, &firstAired); err != nil {
 					return err
 				}
-				log.Printf(
-					"> [%s] %s (%s)",
-					episodeID, title, firstAired.Format("2006-01-02"),
-				)
+				//log.Printf(
+				//	"> [%s] %s (%s)",
+				//	episodeID, title, firstAired.Format("2006-01-02"),
+				//)
 			}
 			return rows.Err()
-		}, retry.WithDoRetryOptions(retry.WithIdempotent(true)),
+		}, retry.WithIdempotent(true), retry.WithLabel("selectScan"),
 	)
 	if err != nil {
 		return fmt.Errorf("scan query failed: %w", err)
@@ -210,7 +209,7 @@ func fillTablesWithData(ctx context.Context, db *sql.DB) (err error) {
 			return err
 		}
 		return nil
-	}, retry.WithDoTxRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true), retry.WithLabel("fillTablesWithData"))
 	if err != nil {
 		return fmt.Errorf("upsert query failed: %w", err)
 	}
@@ -244,7 +243,7 @@ func prepareSchema(ctx context.Context, db *sql.DB) (err error) {
 			return err
 		}
 		return nil
-	}, retry.WithDoRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true), retry.WithLabel("prepareSchema/series"))
 	if err != nil {
 		return fmt.Errorf("create table failed: %w", err)
 	}
@@ -275,7 +274,7 @@ func prepareSchema(ctx context.Context, db *sql.DB) (err error) {
 			return err
 		}
 		return nil
-	}, retry.WithDoRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true), retry.WithLabel("prepareSchema/seasons"))
 	if err != nil {
 		return fmt.Errorf("create table failed: %w", err)
 	}
@@ -307,7 +306,7 @@ func prepareSchema(ctx context.Context, db *sql.DB) (err error) {
 			return err
 		}
 		return nil
-	}, retry.WithDoRetryOptions(retry.WithIdempotent(true)))
+	}, retry.WithIdempotent(true), retry.WithLabel("prepareSchema/episodes"))
 	if err != nil {
 		return fmt.Errorf("create table failed: %w", err)
 	}

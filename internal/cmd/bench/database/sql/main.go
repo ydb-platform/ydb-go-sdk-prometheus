@@ -5,54 +5,58 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
+	"path"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus/v2"
 	"github.com/ydb-platform/ydb-go-sdk/v3"
-	"github.com/ydb-platform/ydb-go-sdk/v3/log"
-	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
-
-	metrics "github.com/ydb-platform/ydb-go-sdk-prometheus"
 )
 
 var (
-	ydbURL        = "grpc://localhost:2136/local"
-	prometheusURL = "http://localhost:8080"
-	threads       = 50
+	ydbURL  = "grpc://localhost:2136/local"
+	threads = 50
 )
 
 func init() {
-	flag.StringVar(&ydbURL, "ydb-url", ydbURL, "connection string for connect to YDB")
-	flag.StringVar(&prometheusURL, "prometheus-url", prometheusURL, "Push url for prometheus metrics, set to 'off' for disable")
+	flag.StringVar(&ydbURL, "ydb", ydbURL, "connection string for connect to YDB")
 	flag.IntVar(&threads, "threads", threads, "concurrency factor for upsert and read data")
-
-	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
-
-	fmt.Println("GOMAXPROCS =", runtime.GOMAXPROCS(1))
-	fmt.Println("GOMAXPROCS =", runtime.GOMAXPROCS(1))
-}
-
-func init() {
-	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 500
 }
 
 func main() {
+	flag.Parse()
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
 	registry := prometheus.NewRegistry()
 
-	ctx := context.Background()
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/metrics",
+			promhttp.HandlerFor(
+				registry,
+				promhttp.HandlerOpts{
+					Registry: registry,
+				},
+			),
+		)
+		if err := http.ListenAndServe(":8080", mux); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	connectCtx, connectCancel := context.WithTimeout(ctx, 500*time.Second)
 	defer connectCancel()
 
 	nativeDriver, err := ydb.Open(connectCtx, ydbURL,
 		metrics.WithTraces(registry),
-		ydb.WithLogger(log.Default(os.Stdout), trace.DetailsAll, log.WithLogQuery()),
 	)
 	if err != nil {
 		panic(err)
@@ -62,7 +66,7 @@ func main() {
 	}()
 
 	connector, err := ydb.Connector(nativeDriver,
-		ydb.WithTablePathPrefix("database/sql/bench"),
+		ydb.WithTablePathPrefix(path.Join(nativeDriver.Name(), "database/sql/bench")),
 		ydb.WithAutoDeclare(),
 	)
 	if err != nil {
@@ -72,10 +76,9 @@ func main() {
 	db := sql.OpenDB(connector)
 	defer func() { _ = db.Close() }()
 
-	go promPusher(registry)
-
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
+	db.SetMaxOpenConns(threads * 3)
+	db.SetMaxIdleConns(threads * 3)
+	db.SetConnMaxIdleTime(time.Second)
 
 	err = prepareSchema(ctx, db)
 	if err != nil {
@@ -135,15 +138,4 @@ func main() {
 		}()
 	}
 	wg.Wait()
-}
-
-func promPusher(registry prometheus.Gatherer) {
-	pusher := push.New(prometheusURL, "bench")
-	pusher.Gatherer(registry)
-	for {
-		time.Sleep(time.Second)
-		if err := pusher.Push(); err != nil {
-			fmt.Printf("Push error: %+v", err)
-		}
-	}
 }

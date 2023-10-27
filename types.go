@@ -2,12 +2,12 @@ package metrics
 
 import (
 	"fmt"
-	"github.com/ydb-platform/ydb-go-sdk/v3/metrics"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/ydb-platform/ydb-go-sdk/v3/metrics"
 	"github.com/ydb-platform/ydb-go-sdk/v3/trace"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	defaultTimerBuckets = prometheus.ExponentialBuckets(time.Millisecond.Seconds(), 1.25, 100)
+	defaultTimerBuckets = prometheus.ExponentialBuckets((5 * time.Millisecond).Seconds(), 2.0, 15)
 )
 
 var _ metrics.Config = (*config)(nil)

@@ -1,96 +1,35 @@
-version: '2.1'
-
-networks:
-  monitor-net:
-    driver: bridge
-
-volumes:
-    prometheus_data: {}
-    grafana_data: {}
+version: '3.2'
 
 services:
   prometheus:
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:latest
     container_name: prometheus
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    restart: unless-stopped
-    expose:
-      - 9090
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
-
-  prompush:
-    image: prom/pushgateway
-    container_name: prompush
-    expose:
-      - 9091
     ports:
-      - "8080:9091"
-    networks:
-      - monitor-net
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
-    image: grafana/grafana:8.2.1
-    container_name: grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-    restart: unless-stopped
-    expose:
-      - 3000
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
-
-  caddy:
-    image: stefanprodan/caddy
-    container_name: caddy
+    image: grafana/grafana
+    depends_on:
+      - prometheus
     ports:
-      - "3000:3000"
-      - "9090:9090"
-      - "9093:9093"
-      - "9091:9091"
-    volumes:
-      - ./caddy:/etc/caddy
-    environment:
-      - ADMIN_USER=admin
-      - ADMIN_PASSWORD=admin
-    restart: unless-stopped
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
+      - 3000:3000
+    restart: always
 
   ydb:
     image: cr.yandex/yc/yandex-docker-local-ydb:23.3
     container_name: ydb-local
+    restart: always
     hostname: localhost
+    ports:
+      - 2136:2136
+      - 8765:8765
     environment:
       - GRPC_TLS_PORT=2135
       - GRPC_PORT=2136
       - MON_PORT=8765
-      - YDB_USE_IN_MEMORY_PDISKS=true
+#      - YDB_USE_IN_MEMORY_PDISKS=true
       - YDB_DEFAULT_LOG_LEVEL=NOTICE
-    ports:
-      - "2136:2136"
-      - "8765:8765"
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
