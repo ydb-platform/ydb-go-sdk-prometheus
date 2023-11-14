@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 5,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -35,7 +35,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает количество диннод YDB, обслуживающих базу данных, с разбиением по зонам доступности",
           "fieldConfig": {
@@ -58,7 +58,6 @@
                   "tooltip": false,
                   "viz": false
                 },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineStyle": {
                   "dash": [
@@ -121,11 +120,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(az, local_dc) (ydb_go_sdk_ydb_driver_balancer_endpoints{job=\"ydb-go-sdk\"})",
+              "expr": "sum by(az, local_dc) (${sdk_prefix}_ydb_driver_balancer_endpoints{job=\"$job\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": true,
@@ -141,7 +140,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает интенсивность обновлений состояния клиентского балансера с помощью специального запроса discovery/ListEndpoints. \nКлиентский балансер хранит и отслеживает состояние кластера YDB и является маршрутизатором всех клиентских запросов.\nБалансер конфигурируется политиками балансировки (пакет balancers) и периодом штатного обновления сведений о конфигурации кластера YDB.\nПо умолчанию балансер перезапрашивает состояние кластера YDB раз в 1 минуту. Дефолт можно перенастроить с помощью опции WithDiscoveryInterval(time.Duration).\nПри возникновении проблем драйвер принудительно перезапрашивает состонояние кластера (на графике линия \"force: true\")",
           "fieldConfig": {
@@ -164,7 +163,6 @@
                   "tooltip": false,
                   "viz": false
                 },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineStyle": {
                   "fill": "solid"
@@ -224,11 +222,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(cause) (changes(ydb_go_sdk_ydb_driver_balancer_updates{job=\"ydb-go-sdk\"}[1m]))",
+              "expr": "sum by(cause) (changes(${sdk_prefix}_ydb_driver_balancer_updates{job=\"$job\"}[1m]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -244,7 +242,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает интенсивность запросов discovery/ListEndpoints с целью обновить состояние клиентского балансера. \nКлиентский балансер хранит и отслеживает состояние кластера YDB и является маршрутизатором всех клиентских запросов.\nБалансер конфигурируется политиками балансировки (пакет balancers) и периодом штатного обновления сведений о конфигурации кластера YDB.\nПо умолчанию балансер перезапрашивает состояние кластера YDB раз в 1 минуту. Дефолт можно перенастроить с помощью опции WithDiscoveryInterval(time.Duration).\nПри возникновении проблем драйвер принудительно перезапрашивает состонояние кластера (на графике линия \"force: true\")",
           "fieldConfig": {
@@ -267,7 +265,6 @@
                   "tooltip": false,
                   "viz": false
                 },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineStyle": {
                   "fill": "solid"
@@ -327,11 +324,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(status, cause) (changes(ydb_go_sdk_ydb_driver_balancer_discoveries{job=\"ydb-go-sdk\"}[1m]))",
+              "expr": "sum by(status, cause) (changes(${sdk_prefix}_ydb_driver_balancer_discoveries{job=\"$job\"}[1m]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -362,7 +359,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает запросы в YDB",
           "fieldConfig": {
@@ -406,8 +403,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -442,11 +438,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(method, status) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status!~\"retryable/Invoke\"}[$__rate_interval]))",
+              "expr": "sum by(method, status) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status!~\"retryable/Invoke\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -464,7 +460,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает запросы в YDB",
           "fieldConfig": {
@@ -508,8 +504,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -544,11 +539,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(endpoint) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status!~\"retryable/Invoke\"}[$__rate_interval]))",
+              "expr": "sum by(endpoint) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status!~\"retryable/Invoke\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -564,7 +559,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает запросы в YDB",
           "fieldConfig": {
@@ -608,8 +603,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -644,11 +638,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(node_id) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status!~\"retryable.*\"}[$__rate_interval]))",
+              "expr": "sum by(node_id) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status!~\"retryable.*\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -664,7 +658,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает транспортные (GRPC) ошибки при запросах в YDB",
           "fieldConfig": {
@@ -708,8 +702,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -744,11 +737,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(status) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status=~\"transport/.+\"}[$__rate_interval]))",
+              "expr": "sum by(status) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status=~\"transport/.+\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -764,7 +757,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает операционные (серверные) ошибки при запросах в YDB",
           "fieldConfig": {
@@ -808,8 +801,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -844,11 +836,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(status) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status=~\"operation/.+\"}[$__rate_interval]))",
+              "expr": "sum by(status) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status=~\"operation/.+\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -864,7 +856,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает ошибки Transaction locks invalidated при запросах в YDB",
           "fieldConfig": {
@@ -908,8 +900,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -944,11 +935,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "sum by(method, status) (rate(ydb_go_sdk_ydb_driver_transaction_locks_invalidated{job=\"ydb-go-sdk\"}[$__rate_interval]))",
+              "expr": "sum by(method, status) (rate(${sdk_prefix}_ydb_driver_transaction_locks_invalidated{job=\"$job\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -964,7 +955,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает НЕ транспортные (GRPC) и НЕ операционные (серверные) ошибки при запросах в YDB",
           "fieldConfig": {
@@ -1008,8 +999,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1044,11 +1034,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(method, status) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", status!~\"^(transport|operation|OK).*\"}[$__rate_interval]))",
+              "expr": "sum by(method, status) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", status!~\"^(transport|operation|OK).*\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -1078,7 +1068,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает время выполнения пользовательских операций с помощью ретраера. Линии сгруппированы по метке вызова ретраера (retry_label). По умолчанию метка retry_label проставляется по имени пакета и функции в пакете. Метку можно переопределить с помощью опции WithLabel",
           "fieldConfig": {
@@ -1122,8 +1112,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1159,11 +1148,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le, retry_label) (rate(ydb_go_sdk_ydb_retry_latency_bucket{job=\"ydb-go-sdk\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.99, sum by(le, retry_label) (rate(${sdk_prefix}_ydb_retry_latency_bucket{job=\"$job\"}[$__rate_interval])))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -1179,7 +1168,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает промежуточные ошибки ретраера",
           "fieldConfig": {
@@ -1223,8 +1212,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1260,11 +1248,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum by(retry_label, status) (rate(ydb_go_sdk_ydb_retry_errors{job=\"ydb-go-sdk\", status!=\"OK\", final=\"false\"}[$__rate_interval]))",
+              "expr": "sum by(retry_label, status) (rate(${sdk_prefix}_ydb_retry_errors{job=\"$job\", status!=\"OK\", final=\"false\"}[$__rate_interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -1280,7 +1268,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "description": "График показывает количество попыток ретраера выполнить пользовательскую операцию. В нормальном режиме должна быть единица на графике. Если происходят какие-то ретраибельные ошибки - возможно повторения",
           "fieldConfig": {
@@ -1324,8 +1312,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1361,11 +1348,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+                "uid": "$source"
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "histogram_quantile(0.99, sum by(le, retry_label) (rate(ydb_go_sdk_ydb_retry_attempts_bucket{job=\"ydb-go-sdk\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.99, sum by(le, retry_label) (rate(${sdk_prefix}_ydb_retry_attempts_bucket{job=\"$job\"}[$__rate_interval])))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": true,
@@ -1383,7 +1370,7 @@
       "type": "row"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1391,14 +1378,474 @@
         "y": 3
       },
       "id": 30,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "description": "График показывает состояние пула соединений database/sql: количество открытых соединений, количество соединений в работе, количество открытых транзакций. \nКоличество открытых соединений лимитируется настройкой db.SetMaxOpenConns(limit). Если настройка не выставлена, то для выполнения конкретного запроса открывается соединение, после выполнения запроса соединение закрывается",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 7,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 0,
+            "y": 12
+          },
+          "id": 32,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "${sdk_prefix}_ydb_table_pool_size{job=\"$job\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "size",
+              "range": true,
+              "refId": "size",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "${sdk_prefix}_ydb_table_pool_inflight{job=\"$job\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "inflight",
+              "range": true,
+              "refId": "inflight",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "${sdk_prefix}_ydb_table_pool_wait{job=\"$job\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "wait",
+              "range": true,
+              "refId": "wait",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "${sdk_prefix}_ydb_table_pool_limit{job=\"$job\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "limit",
+              "range": true,
+              "refId": "limit",
+              "useBackend": false
+            }
+          ],
+          "title": "Pool",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "description": "График показывает запросы в YDB",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 12
+          },
+          "id": 31,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "label_replace(sum by(method) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", method=~\"(/Ydb.Table.V1.TableService/((Begin|Commit|Rollback)Transaction|ExecudeDataQuery|StreamExecuteScanQuery|StreamReadTable|BulkUpsert|(Create|Drop|Alter)Table))\"}[$__rate_interval])), \"method\", \"$1\", \"method\", \"/Ydb.Table.V1.TableService/(.*)\")",
+              "fullMetaSearch": false,
+              "includeNullMetadata": false,
+              "instant": true,
+              "legendFormat": "{{method}}",
+              "range": true,
+              "refId": "methods",
+              "useBackend": false
+            }
+          ],
+          "title": "by Method",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 0,
+            "y": 19
+          },
+          "id": 28,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "sum by(node_id) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", method=\"/Ydb.Table.V1.TableService/CreateSession\", status=\"OK\"}[$__rate_interval]))",
+              "fullMetaSearch": false,
+              "includeNullMetadata": false,
+              "instant": true,
+              "legendFormat": "node_id: {{node_id}}",
+              "range": true,
+              "refId": "begin",
+              "useBackend": false
+            }
+          ],
+          "title": "CreateSession by NodeID",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 19
+          },
+          "id": 29,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$source"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "sum by(endpoint) (rate(${sdk_prefix}_ydb_driver_conn_requests{job=\"$job\", method=\"/Ydb.Table.V1.TableService/CreateSession\", status=\"OK\"}[$__rate_interval]))",
+              "fullMetaSearch": false,
+              "includeNullMetadata": false,
+              "instant": true,
+              "legendFormat": "{{endpoint}}",
+              "range": true,
+              "refId": "begin",
+              "useBackend": false
+            }
+          ],
+          "title": "CreateSession by Endpoint",
+          "type": "timeseries"
+        }
+      ],
       "title": "Table",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 16,
+      "panels": [],
+      "title": "database/sql",
       "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+        "uid": "$source"
       },
       "description": "График показывает состояние пула соединений database/sql: количество открытых соединений, количество соединений в работе, количество открытых транзакций. \nКоличество открытых соединений лимитируется настройкой db.SetMaxOpenConns(limit). Если настройка не выставлена, то для выполнения конкретного запроса открывается соединение, после выполнения запроса соединение закрывается",
       "fieldConfig": {
@@ -1420,7 +1867,6 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -1461,9 +1907,9 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 4
+        "y": 5
       },
-      "id": 32,
+      "id": 1,
       "options": {
         "legend": {
           "calcs": [],
@@ -1480,81 +1926,47 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "ydb_go_sdk_ydb_table_pool_size{job=\"ydb-go-sdk\"}",
+          "editorMode": "code",
+          "expr": "${sdk_prefix}_ydb_database_sql_conns{job=\"$job\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
           "instant": true,
-          "legendFormat": "size",
+          "legendFormat": "In pool",
           "range": true,
-          "refId": "size",
+          "refId": "conns",
           "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "ydb_go_sdk_ydb_table_pool_inflight{job=\"ydb-go-sdk\"}",
+          "expr": "${sdk_prefix}_ydb_database_sql_conns_inflight{job=\"$job\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
           "instant": true,
-          "legendFormat": "inflight",
+          "legendFormat": "Usage",
           "range": true,
-          "refId": "inflight",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "ydb_go_sdk_ydb_table_pool_wait{job=\"ydb-go-sdk\"}",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": true,
-          "legendFormat": "wait",
-          "range": true,
-          "refId": "wait",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "ydb_go_sdk_ydb_table_pool_limit{job=\"ydb-go-sdk\"}",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": true,
-          "legendFormat": "limit",
-          "range": true,
-          "refId": "limit",
+          "refId": "usage",
           "useBackend": false
         }
       ],
-      "title": "Pool",
+      "title": "pool",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+        "uid": "$source"
       },
-      "description": "График показывает запросы в YDB",
+      "description": "График показывает интенсивность запросов через метод QueryContext",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1574,7 +1986,6 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -1613,9 +2024,9 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 4
+        "y": 5
       },
-      "id": 31,
+      "id": 19,
       "options": {
         "legend": {
           "calcs": [],
@@ -1632,29 +2043,29 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "label_replace(sum by(method) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", method=~\"(/Ydb.Table.V1.TableService/((Begin|Commit|Rollback)Transaction|ExecudeDataQuery|StreamExecuteScanQuery|StreamReadTable|BulkUpsert|(Create|Drop|Alter)Table))\"}[$__rate_interval])), \"method\", \"$1\", \"method\", \"/Ydb.Table.V1.TableService/(.*)\")",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_query{job=\"$job\"}[$__rate_interval])",
           "fullMetaSearch": false,
           "includeNullMetadata": false,
           "instant": true,
-          "legendFormat": "{{method}}",
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
           "range": true,
-          "refId": "methods",
+          "refId": "QueryContext",
           "useBackend": false
         }
       ],
-      "title": "by Method",
+      "title": "QueryContext",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+        "uid": "$source"
       },
-      "description": "",
+      "description": "График показывает интенсивность запросов через метод ExecContext",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1674,7 +2085,105 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_exec{job=\"$job\"}[$__rate_interval])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
+          "range": true,
+          "refId": "QueryContext",
+          "useBackend": false
+        }
+      ],
+      "title": "ExecContext",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$source"
+      },
+      "description": "График показывает интенсивность запросов через метод QueryContext",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -1713,9 +2222,9 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 11
+        "y": 12
       },
-      "id": 28,
+      "id": 25,
       "options": {
         "legend": {
           "calcs": [],
@@ -1732,29 +2241,264 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(node_id) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", method=\"/Ydb.Table.V1.TableService/CreateSession\", status=\"OK\"}[$__rate_interval]))",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_tx_begin{job=\"$job\", status=\"OK\"}[$__rate_interval])",
           "fullMetaSearch": false,
+          "hide": false,
           "includeNullMetadata": false,
           "instant": true,
-          "legendFormat": "node_id: {{node_id}}",
+          "legendFormat": "begin",
           "range": true,
           "refId": "begin",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_tx_commit{job=\"$job\"}[$__rate_interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "commit",
+          "range": true,
+          "refId": "commit",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_tx_rollback{job=\"$job\"}[$__rate_interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "rollback",
+          "range": true,
+          "refId": "rollback",
+          "useBackend": false
         }
       ],
-      "title": "CreateSession by NodeID",
+      "title": "BeginTx + Commit + Rollback",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+        "uid": "$source"
       },
-      "description": "",
+      "description": "График показывает время выполнения запросов через QueryContext. Линии сгруппированы по метке вызова (query_label). Метку можно переопределить с помощью опции metrics.WithQueryLabel",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 9,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "histogram_quantile(0.99, sum by(le, query_mode, query_label, status) (rate(${sdk_prefix}_ydb_database_sql_query_latency_bucket{job=\"$job\"}[$__rate_interval])))",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
+          "range": true,
+          "refId": "latency p95",
+          "useBackend": false
+        }
+      ],
+      "title": "QueryContext latency p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$source"
+      },
+      "description": "График показывает время выполнения запросов через ExecContext. Линии сгруппированы по метке вызова (query_label). Метку можно переопределить с помощью опции metrics.WithQueryLabel",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 9,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$source"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "histogram_quantile(0.99, sum by(le, query_mode, query_label, status) (rate(${sdk_prefix}_ydb_database_sql_exec_latency_bucket{job=\"$job\"}[$__rate_interval])))",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
+          "range": true,
+          "refId": "latency p95",
+          "useBackend": false
+        }
+      ],
+      "title": "ExecContext latency p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$source"
+      },
+      "description": "График показывает интенсивность запросов через метод QueryContext",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1774,7 +2518,6 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -1813,9 +2556,9 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 11
+        "y": 19
       },
-      "id": 29,
+      "id": 23,
       "options": {
         "legend": {
           "calcs": [],
@@ -1832,902 +2575,204 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(endpoint) (rate(ydb_go_sdk_ydb_driver_conn_requests{job=\"ydb-go-sdk\", method=\"/Ydb.Table.V1.TableService/CreateSession\", status=\"OK\"}[$__rate_interval]))",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_query{job=\"$job\", status!=\"OK\"}[$__rate_interval])",
           "fullMetaSearch": false,
           "includeNullMetadata": false,
           "instant": true,
-          "legendFormat": "{{endpoint}}",
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
           "range": true,
-          "refId": "begin",
+          "refId": "QueryContext",
           "useBackend": false
         }
       ],
-      "title": "CreateSession by Endpoint",
+      "title": "QueryContext errors",
       "type": "timeseries"
     },
     {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 18
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$source"
       },
-      "id": 16,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+      "description": "График показывает интенсивность запросов через метод ExecContext",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
           },
-          "description": "График показывает состояние пула соединений database/sql: количество открытых соединений, количество соединений в работе, количество открытых транзакций. \nКоличество открытых соединений лимитируется настройкой db.SetMaxOpenConns(limit). Если настройка не выставлена, то для выполнения конкретного запроса открывается соединение, после выполнения запроса соединение закрывается",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
               },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 7,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
+              {
+                "color": "red",
+                "value": 80
               }
-            },
-            "overrides": []
+            ]
           },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 0,
-            "y": 26
-          },
-          "id": 1,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "ydb_go_sdk_ydb_database_sql_conns{job=\"ydb-go-sdk\"}",
-              "fullMetaSearch": false,
-              "hide": false,
-              "includeNullMetadata": true,
-              "instant": true,
-              "legendFormat": "In pool",
-              "range": true,
-              "refId": "conns",
-              "useBackend": false
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "ydb_go_sdk_ydb_database_sql_conns_inflight{job=\"ydb-go-sdk\"}",
-              "fullMetaSearch": false,
-              "hide": false,
-              "includeNullMetadata": true,
-              "instant": true,
-              "legendFormat": "Usage",
-              "range": true,
-              "refId": "usage",
-              "useBackend": false
-            }
-          ],
-          "title": "pool",
-          "type": "timeseries"
+          "unit": "reqps"
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
+            "uid": "$source"
           },
-          "description": "График показывает интенсивность запросов через метод QueryContext",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 26
-          },
-          "id": 19,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_query{job=\"ydb-go-sdk\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "QueryContext",
-              "useBackend": false
-            }
-          ],
-          "title": "QueryContext",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает интенсивность запросов через метод ExecContext",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 16,
-            "y": 26
-          },
-          "id": 20,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "code",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_exec{job=\"ydb-go-sdk\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "QueryContext",
-              "useBackend": false
-            }
-          ],
-          "title": "ExecContext",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает интенсивность запросов через метод QueryContext",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 0,
-            "y": 33
-          },
-          "id": 25,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_tx_begin{job=\"ydb-go-sdk\", status=\"OK\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "hide": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "begin",
-              "range": true,
-              "refId": "begin",
-              "useBackend": false
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_tx_commit{job=\"ydb-go-sdk\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "hide": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "commit",
-              "range": true,
-              "refId": "commit",
-              "useBackend": false
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_tx_rollback{job=\"ydb-go-sdk\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "hide": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "rollback",
-              "range": true,
-              "refId": "rollback",
-              "useBackend": false
-            }
-          ],
-          "title": "BeginTx + Commit + Rollback",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает время выполнения запросов через QueryContext. Линии сгруппированы по метке вызова (query_label). Метку можно переопределить с помощью опции metrics.WithQueryLabel",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 9,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "s"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 33
-          },
-          "id": 21,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "10.1.5",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le, query_mode, query_label, status) (rate(ydb_go_sdk_ydb_database_sql_query_latency_bucket{job=\"ydb-go-sdk\"}[$__rate_interval])))",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "latency p95",
-              "useBackend": false
-            }
-          ],
-          "title": "QueryContext latency p99",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает время выполнения запросов через ExecContext. Линии сгруппированы по метке вызова (query_label). Метку можно переопределить с помощью опции metrics.WithQueryLabel",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 9,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "s"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 16,
-            "y": 33
-          },
-          "id": 22,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "10.1.5",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le, query_mode, query_label, status) (rate(ydb_go_sdk_ydb_database_sql_exec_latency_bucket{job=\"ydb-go-sdk\"}[$__rate_interval])))",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "latency p95",
-              "useBackend": false
-            }
-          ],
-          "title": "ExecContext latency p99",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает интенсивность запросов через метод QueryContext",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 8,
-            "y": 40
-          },
-          "id": 23,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_query{job=\"ydb-go-sdk\", status!=\"OK\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "QueryContext",
-              "useBackend": false
-            }
-          ],
-          "title": "QueryContext errors",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-          },
-          "description": "График показывает интенсивность запросов через метод ExecContext",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 8,
-            "x": 16,
-            "y": 40
-          },
-          "id": 24,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "ab05f06c-d979-4470-8779-819e5d82e0f3"
-              },
-              "disableTextWrap": false,
-              "editorMode": "builder",
-              "expr": "rate(ydb_go_sdk_ydb_database_sql_exec{job=\"ydb-go-sdk\", status!=\"OK\"}[$__rate_interval])",
-              "fullMetaSearch": false,
-              "includeNullMetadata": false,
-              "instant": true,
-              "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
-              "range": true,
-              "refId": "QueryContext",
-              "useBackend": false
-            }
-          ],
-          "title": "ExecContext errors",
-          "type": "timeseries"
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(${sdk_prefix}_ydb_database_sql_exec{job=\"$job\", status!=\"OK\"}[$__rate_interval])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": true,
+          "legendFormat": "{{query_label}}({{query_mode}}) - {{status}}",
+          "range": true,
+          "refId": "QueryContext",
+          "useBackend": false
         }
       ],
-      "title": "database/sql",
-      "type": "row"
+      "title": "ExecContext errors",
+      "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "Prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "source",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "ydb_go_sdk",
+          "value": "ydb_go_sdk"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "sdk_prefix",
+        "options": [
+          {
+            "selected": true,
+            "text": "ydb_go_sdk",
+            "value": "ydb_go_sdk"
+          }
+        ],
+        "query": "ydb_go_sdk",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "ydb-go-sdk",
+          "value": "ydb-go-sdk"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$source"
+        },
+        "definition": "label_values(job)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "2023-10-20T11:07:50.032Z",
-    "to": "2023-10-20T13:41:11.655Z"
+    "from": "now-15m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "ydb-go-sdk",
   "uid": "be0b2f1a-f053-495d-9260-92c48e606a5c",
-  "version": 18,
+  "version": 3,
   "weekStart": ""
 }
