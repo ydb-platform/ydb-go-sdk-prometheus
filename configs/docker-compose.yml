@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   prometheus:
-    image: prom/prometheus:v2.37.9
+    image: prom/prometheus:v2.45.4
     container_name: prometheus
     ports:
       - 9090:9090
@@ -12,25 +12,25 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
-    image: grafana/grafana:9.5.13
+    image: grafana/grafana:10.0.12
     depends_on:
       - prometheus
     ports:
       - 3000:3000
     restart: always
 
-  ydb:
-    image: cr.yandex/yc/yandex-docker-local-ydb:23.3
-    container_name: ydb-local
-    restart: always
-    hostname: localhost
-    ports:
-      - 2135:2135
-      - 2136:2136
-      - 8765:8765
-    environment:
-      - GRPC_TLS_PORT=2135
-      - GRPC_PORT=2136
-      - MON_PORT=8765
-#      - YDB_USE_IN_MEMORY_PDISKS=true
-      - YDB_DEFAULT_LOG_LEVEL=NOTICE
+#  ydb:
+#    image: cr.yandex/yc/yandex-docker-local-ydb:23.3
+#    container_name: ydb-local
+#    restart: always
+#    hostname: localhost
+#    ports:
+#      - 2135:2135
+#      - 2136:2136
+#      - 8765:8765
+#    environment:
+#      - GRPC_TLS_PORT=2135
+#      - GRPC_PORT=2136
+#      - MON_PORT=8765
+##      - YDB_USE_IN_MEMORY_PDISKS=true
+#      - YDB_DEFAULT_LOG_LEVEL=NOTICE
