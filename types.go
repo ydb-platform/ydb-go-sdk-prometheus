@@ -21,10 +21,12 @@ var (
 	defaultTimerBuckets = prometheus.ExponentialBuckets((5 * time.Millisecond).Seconds(), 2.0, 15)
 )
 
-var _ metrics.Config = (*config)(nil)
+var (
+	_ metrics.Config = (*config)(nil)
+)
 
 type config struct {
-	details      trace.Details
+	detailer     trace.Detailer
 	separator    string
 	registry     prometheus.Registerer
 	namespace    string
@@ -40,14 +42,16 @@ type config struct {
 func Config(registry prometheus.Registerer, opts ...option) *config {
 	c := &config{
 		registry:     registry,
-		details:      trace.DetailsAll,
+		detailer:     trace.DetailsAll,
 		namespace:    defaultNamespace,
 		separator:    defaultSeparator,
 		timerBuckets: defaultTimerBuckets,
 	}
+
 	for _, o := range opts {
 		o(c)
 	}
+
 	return c
 }
 
@@ -83,7 +87,7 @@ func (c *config) join(a, b string) string {
 func (c *config) WithSystem(subsystem string) metrics.Config {
 	return &config{
 		separator:    c.separator,
-		details:      c.details,
+		detailer:     c.detailer,
 		registry:     c.registry,
 		timerBuckets: c.timerBuckets,
 		namespace:    c.join(c.namespace, subsystem),
@@ -259,7 +263,7 @@ func (c *config) HistogramVec(name string, buckets []float64, labelNames ...stri
 }
 
 func (c *config) Details() trace.Details {
-	return c.details
+	return c.detailer.Details()
 }
 
 type option func(*config)
@@ -270,9 +274,18 @@ func WithNamespace(namespace string) option {
 	}
 }
 
+// WithDetails aplly details bitnask to prometheus adapter for ydb-go-sdk
+//
+// Deprecated: Use WithDetailer instead
 func WithDetails(details trace.Details) option {
 	return func(c *config) {
-		c.details = details
+		c.detailer = details
+	}
+}
+
+func WithDetailer(detailer trace.Detailer) option {
+	return func(c *config) {
+		c.detailer = detailer
 	}
 }
 
