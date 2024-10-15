@@ -1,12 +1,12 @@
-# metrics
+# ydb-go-sdk-prometheus
 
-metrics package helps to create ydb-go-sdk traces with monitoring over prometheus 
+ydb-go-sdk-prometheus implements prometheus adapter for ydb-go-sdk/v3/metrics package
 
 ## Usage
 ```go
 import (
     "github.com/ydb-platform/ydb-go-sdk/v3"
-    ydbPrometheus "github.com/ydb-platform/ydb-go-sdk-prometheus"
+    ydbPrometheus "github.com/ydb-platform/ydb-go-sdk-prometheus/v2"
 )
 
 ...
