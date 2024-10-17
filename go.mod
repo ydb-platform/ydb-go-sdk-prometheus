@@ -2,12 +2,10 @@ module github.com/ydb-platform/ydb-go-sdk-prometheus/v2
 
 go 1.21
 
-toolchain go1.23.0
-
 require (
 	github.com/google/uuid v1.6.0
 	github.com/prometheus/client_golang v1.19.0
-	github.com/ydb-platform/ydb-go-sdk/v3 v3.84.1
+	github.com/ydb-platform/ydb-go-sdk/v3 v3.81.4
 )
 
 require (
